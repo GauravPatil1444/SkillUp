@@ -1,0 +1,78 @@
+# OSX
+#
+SkillUp/.DS_Store
+
+# Xcode
+#
+SkillUp/build/
+SkillUp/*.pbxuser
+SkillUp/!default.pbxuser
+SkillUp/*.mode1v3
+SkillUp/!default.mode1v3
+SkillUp/*.mode2v3
+SkillUp/!default.mode2v3
+SkillUp/*.perspectivev3
+SkillUp/!default.perspectivev3
+SkillUp/xcuserdata
+SkillUp/*.xccheckout
+SkillUp/*.moved-aside
+SkillUp/DerivedData
+SkillUp/*.hmap
+SkillUp/*.ipa
+SkillUp/*.xcuserstate
+SkillUp/**/.xcode.env.local
+
+# Android/IntelliJ
+#
+SkillUp/build/
+SkillUp/.idea
+SkillUp/.gradle
+SkillUp/local.properties
+SkillUp/*.iml
+SkillUp/*.hprof
+SkillUp/.cxx/
+SkillUp/*.keystore
+SkillUp/!debug.keystore
+
+# node.js
+#
+SkillUp/node_modules/
+SkillUp/npm-debug.log
+SkillUp/yarn-error.log
+
+# fastlane
+#
+# It is recommended to not store the screenshots in the git repo. Instead, use fastlane to re-generate the
+# screenshots whenever they are needed.
+# For more information about the recommended setup visit:
+# https://docs.fastlane.tools/best-practices/source-control/
+
+SkillUp/**/fastlane/report.xml
+SkillUp/**/fastlane/Preview.html
+SkillUp/**/fastlane/screenshots
+SkillUp/**/fastlane/test_output
+
+# Bundle artifact
+SkillUp/*.jsbundle
+
+# Ruby / CocoaPods
+SkillUp/**/Pods/
+SkillUp//vendor/bundle/
+
+# Temporary files created by Metro to check the health of the file watcher
+SkillUp/.metro-health-check*
+
+# testing
+SkillUp//coverage
+
+# Yarn
+SkillUp/.yarn/*
+SkillUp/!.yarn/patches
+SkillUp/!.yarn/plugins
+SkillUp/!.yarn/releases
+SkillUp/!.yarn/sdks
+SkillUp/!.yarn/versions
+Backend/.env
+Backend/*.json
+Backend/pipfile
+Backend/*.lock
