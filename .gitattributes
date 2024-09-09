@@ -1,6 +1,7 @@
 
 # SkillUp folder (React Native)
-SkillUp/** linguist-language=TypeScript
+SkillUp/**/*.ts linguist-language=TypeScript
+SkillUp/**/*.tsx linguist-language=TypeScript
 
 # Backend folder (Python)
 Backend/** linguist-language=Python
