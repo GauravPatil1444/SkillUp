@@ -1,0 +1,22 @@
+
+# SkillUp folder (React Native)
+SkillUp/**/*.ts linguist-language=TypeScript
+SkillUp/**/*.tsx linguist-language=TypeScript
+
+# Backend folder (Python)
+Backend/** linguist-language=Python
+
+# Excluded files
+SkillUp/node_modules/** linguist-vendored
+SkillUp/package-lock.json linguist-vendored
+SkillUp/yarn.lock linguist-vendored
+Backend/requirements.txt linguist-vendored
+*.dll linguist-vendored
+*.exe linguist-vendored
+*.o linguist-vendored
+*.pyc linguist-vendored
+*.log linguist-vendored
+*.db linguist-vendored
+*.class linguist-vendored
+*.so linguist-vendored
+*.json linguist-vendored
