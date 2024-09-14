@@ -8,3 +8,4 @@ youtube-transcript-api
 google-generativeai 
 json5 
 python-dotenv
+redis

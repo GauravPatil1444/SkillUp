@@ -11,7 +11,7 @@ type RecProps = NativeStackScreenProps<StackParamList, 'VideoList'>
 const Rec_videos = ({route,navigation}:RecProps) => {
 
   const {metadata} = route.params
-  console.log(metadata);
+  // console.log(metadata);
   
   return (
     <View style={styles.container}>
@@ -21,11 +21,14 @@ const Rec_videos = ({route,navigation}:RecProps) => {
       />
       <FlatList scrollEventThrottle={200} contentContainerStyle={{ alignItems: 'center' }} style={[styles.rec_videos]}
         data={metadata}
+        initialNumToRender={4}
+        maxToRenderPerBatch={4}
         renderItem={({ item }) =>
           <TouchableOpacity style={styles.videocontainer} onPress={() => { navigation.navigate('VideoPreview',{item}) }}>
             <YoutubeIframe
               height={200}
               videoId={item.videoID}
+              play={false}
             />
             <Text style={styles.videoTitle}>{item.title}</Text>
           </TouchableOpacity>

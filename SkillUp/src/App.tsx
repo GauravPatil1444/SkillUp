@@ -9,6 +9,7 @@ export type StackParamList = {
   WelcomeScreen: undefined;
   VideoList:{
     metadata:any[]|string[],
+    headertitle: string
   };
   VideoPreview:{
     item:string|any
@@ -33,10 +34,10 @@ const App = () => {
         <stack.Screen
           name='VideoList'
           component={VideoList}
-          options={{
-            title: "Recommended",
+          options={({route})=>({
+            title: route.params.headertitle,
             headerStyle:{'backgroundColor':'#FBFCF8'},
-          }}
+          })}
         />
         <stack.Screen
           name='VideoPreview'

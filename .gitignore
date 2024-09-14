@@ -72,7 +72,8 @@ SkillUp/!.yarn/plugins
 SkillUp/!.yarn/releases
 SkillUp/!.yarn/sdks
 SkillUp/!.yarn/versions
+SkillUp/src/assets/*.json
 Backend/.env
-Backend/*.json
+Backend/data.json
 Backend/pipfile
 Backend/*.lock

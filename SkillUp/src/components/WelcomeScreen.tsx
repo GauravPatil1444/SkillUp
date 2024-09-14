@@ -19,12 +19,13 @@ const WelcomeScreen = ({ navigation }: HomeProps) => {
   const [searchinp, setsearchinp] = useState('')
   const [metadata, setmetadata] = useState<videometadata[]>([])
   const [loader, setloader] = useState(true)
+  const [headertitle, setheadertitle] = useState('Recommended')
 
   const topics = ['UmnCZ7-9yDY', 'GwIo3gDZCVQ', 'A74TOX803D0', 'xk4_1vDrzzo', 'ntLJmHOJ0ME', 'Pj0neYUp9Tc', 'dz458ZkBMak', 'eIrMbAQSU34', 'gJ9DYC-jswo', 't8pPdKYpowI']
   const Logo = require('../assets/SkillUp_logo.mp4')
 
   const fetchdata = () => {
-    return fetch('https://b0df-2409-40c2-19-79fe-c1a5-4144-7210-7b54.ngrok-free.app/')
+    return fetch('https://d8c1-202-160-145-0.ngrok-free.app/')
       .then(response => response.json())
       .then(res => { return console.log(res) })
       .catch(error => console.log(error))
@@ -33,8 +34,9 @@ const WelcomeScreen = ({ navigation }: HomeProps) => {
   const search = async ()=>{
     setloader(true);
     setmetadata([])
+    setheadertitle('Search results')
     try {
-      const searchresult = await fetch('https://b0df-2409-40c2-19-79fe-c1a5-4144-7210-7b54.ngrok-free.app/customsearch',
+      const searchresult = await fetch('https://d8c1-202-160-145-0.ngrok-free.app/customsearch',
         {
           method:'post',
           headers: {
@@ -45,6 +47,9 @@ const WelcomeScreen = ({ navigation }: HomeProps) => {
         }
       )
       let result = await searchresult.json()
+      if(result['error']){
+        Alert.alert(result.error)
+      }
       
       for (let i = 0; i < result.length; i++) {
         result[i]['videoID'] = result[i]['videoID'].split('=')[1];
@@ -117,13 +122,15 @@ const WelcomeScreen = ({ navigation }: HomeProps) => {
         </View>}
         {!loader&&<TouchableOpacity
           style={styles.expandbtn}
-          onPress={() => { navigation.navigate('VideoList',{metadata}) }}
+          onPress={() => { navigation.navigate('VideoList',{metadata,headertitle})}}
         >
           <Text style={{ fontFamily: 'Inter_24pt-Regular', fontSize: 16, color: 'rgb(25,42,86)' }}>Expand</Text>
         </TouchableOpacity>}
 
         {!loader&&<FlatList contentContainerStyle={{ alignItems: 'center', gap:15 }} style={[styles.list_videos]}
           data={metadata}
+          initialNumToRender={3}
+          maxToRenderPerBatch={3}
           renderItem={({ item }) =>
             <TouchableOpacity style={styles.videocontainer} onPress={() => {navigation.navigate('VideoPreview',{item})}}>
               <YoutubeIframe

@@ -21,6 +21,8 @@ def transcript(videoID):
         for txt in range(len(result)):
             txtlist.append(result[txt]['text'])
 
+        if(len(txtlist)>=800000):
+            status = False
     except:
         status = False
 
@@ -50,4 +52,4 @@ def transcript(videoID):
         # print(type(data))
         return data
     else:
-        return 404 
+        return {'error':'video is either not suitable or too long'}
