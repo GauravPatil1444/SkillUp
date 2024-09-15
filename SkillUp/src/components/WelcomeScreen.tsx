@@ -25,7 +25,7 @@ const WelcomeScreen = ({ navigation }: HomeProps) => {
   const Logo = require('../assets/SkillUp_logo.mp4')
 
   const fetchdata = () => {
-    return fetch('https://d8c1-202-160-145-0.ngrok-free.app/')
+    return fetch('https://c26d-2401-4900-1b13-ddbf-f800-f414-6493-644b.ngrok-free.app/')
       .then(response => response.json())
       .then(res => { return console.log(res) })
       .catch(error => console.log(error))
@@ -36,7 +36,7 @@ const WelcomeScreen = ({ navigation }: HomeProps) => {
     setmetadata([])
     setheadertitle('Search results')
     try {
-      const searchresult = await fetch('https://d8c1-202-160-145-0.ngrok-free.app/customsearch',
+      const searchresult = await fetch('https://c26d-2401-4900-1b13-ddbf-f800-f414-6493-644b.ngrok-free.app/customsearch',
         {
           method:'post',
           headers: {
