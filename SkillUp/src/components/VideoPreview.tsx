@@ -1,12 +1,14 @@
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Alert, FlatList,StatusBar, ScrollView } from 'react-native'
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import YoutubeIframe from 'react-native-youtube-iframe'
+import { useFocusEffect } from '@react-navigation/native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { StackParamList } from '../App'
+// import { TabParamList } from '../App'
 
-type videoProps = NativeStackScreenProps<StackParamList, 'VideoPreview'>
+type StackVideoProps = NativeStackScreenProps<StackParamList, 'VideoPreview'>
 
-const VideoPreview = ({ route }: videoProps) => {
+const VideoPreview = ({ route }: StackVideoProps) => {
   interface quizcontent {
     question: string,
     correctAnswer: string,
@@ -25,11 +27,18 @@ const VideoPreview = ({ route }: videoProps) => {
   const [count, setcount] = useState(0)
   const [visited, setvisited] = useState<number[]>([])
 
+  useFocusEffect(
+    useCallback(() => {
+      StatusBar.setBackgroundColor('#FBFCF8');
+      StatusBar.setBarStyle('dark-content');
+    }, [])
+  );
+
   const getquiz = async () => {
 
     setloader(true)
     try {
-      const response = await fetch('https://c26d-2401-4900-1b13-ddbf-f800-f414-6493-644b.ngrok-free.app/transcript',
+      const response = await fetch('https://0d5b-2401-4900-54d3-d32f-a99c-4be4-4e20-f431.ngrok-free.app/transcript',
         {
           method: 'POST',
           headers:{
@@ -71,10 +80,6 @@ const VideoPreview = ({ route }: videoProps) => {
 
   return (
     <>
-      <StatusBar
-        backgroundColor={'#FBFCF8'}
-        barStyle={'dark-content'}
-      />
       <View style={styles.videocontainer}>
         <YoutubeIframe
           videoId={item.videoID}
@@ -184,7 +189,7 @@ const styles = StyleSheet.create({
   },
   quizlayout: {
     width: Dimensions.get('window').width,
-    height:Dimensions.get('window').height/2,
+    height:Dimensions.get('window').height/1.7,
     alignItems: 'center',
   },
   btnspace: {

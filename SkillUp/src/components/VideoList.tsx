@@ -1,30 +1,48 @@
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Dimensions, StatusBar } from 'react-native'
 import YoutubeIframe from 'react-native-youtube-iframe'
-import React from 'react'
+import { useFocusEffect, useNavigation } from '@react-navigation/native'
+import React,{useCallback} from 'react'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { StackParamList } from '../App'
-
-type RecProps = NativeStackScreenProps<StackParamList, 'VideoList'>
+// import { StackParamList } from '../App'
+import { TabParamList } from '../App'
+// type StackProps = NativeStackScreenProps<StackParamList, 'VideoPreview'>
+type TabProps = NativeStackScreenProps<TabParamList, 'VideoList'>
 
 // const videolist = ['UmnCZ7-9yDY', 'GwIo3gDZCVQ', 'A74TOX803D0', 'xk4_1vDrzzo', 'ntLJmHOJ0ME', 'Pj0neYUp9Tc', 'dz458ZkBMak', 'eIrMbAQSU34', 'gJ9DYC-jswo', 't8pPdKYpowI']
 
-const Rec_videos = ({route,navigation}:RecProps) => {
+const VideoList = ({route}:TabProps) => {
 
-  const {metadata} = route.params
-  // console.log(metadata);
+  const navigation = useNavigation<string|any>()
+  useFocusEffect(
+    useCallback(() => {
+      StatusBar.setBackgroundColor('#FBFCF8');
+      StatusBar.setBarStyle('dark-content');
+    }, [])
+  );
   
+  let metadata = [];
+
+  try{
+    metadata = route.params.metadata
+  }
+  catch{
+    return(
+      <View style={{flex:1,alignItems:'center',justifyContent:'center'}}>
+        <Text style={{color:'red'}}>No Data available</Text>
+      </View>
+    )
+  }
+  // console.log(metadata);
+
   return (
     <View style={styles.container}>
-      <StatusBar
-        backgroundColor={'#FBFCF8'}
-        barStyle={'dark-content'}
-      />
       <FlatList scrollEventThrottle={200} contentContainerStyle={{ alignItems: 'center' }} style={[styles.rec_videos]}
         data={metadata}
         initialNumToRender={4}
         maxToRenderPerBatch={4}
         renderItem={({ item }) =>
-          <TouchableOpacity style={styles.videocontainer} onPress={() => { navigation.navigate('VideoPreview',{item}) }}>
+          <TouchableOpacity style={styles.videocontainer} onPress={()=>{navigation.navigate('VideoPreview',{item})}}>
+
             <YoutubeIframe
               height={200}
               videoId={item.videoID}
@@ -48,7 +66,6 @@ const styles = StyleSheet.create({
     height:'auto'
   },
   rec_videos: {
-    borderRadius: 20,
     paddingVertical: 40,
     paddingHorizontal: 20,
     position: 'absolute',
@@ -75,4 +92,4 @@ const styles = StyleSheet.create({
     padding:5
   },
 })
-export default Rec_videos
+export default VideoList

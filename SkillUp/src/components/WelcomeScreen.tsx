@@ -1,14 +1,16 @@
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, StatusBar, Alert, TextInput, SafeAreaView } from 'react-native'
-import React, { useRef } from 'react'
+import React, { useCallback } from 'react'
 import YoutubeIframe from 'react-native-youtube-iframe'
 import { useState, useEffect} from 'react'
 import Video from 'react-native-video'
+import { useFocusEffect } from '@react-navigation/native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { StackParamList } from '../App'
+import { StackParamList, TabParamList } from '../App'
 
-type HomeProps = NativeStackScreenProps<StackParamList, 'WelcomeScreen'>
+type TabProps = NativeStackScreenProps<TabParamList, 'StackNavigation'>
+type StackProps = NativeStackScreenProps<StackParamList, 'WelcomeScreen'>
 
-const WelcomeScreen = ({ navigation }: HomeProps) => {
+const WelcomeScreen = ({ navigation }:StackProps) => {
 
   interface videometadata {
     videoID:string,
@@ -25,7 +27,7 @@ const WelcomeScreen = ({ navigation }: HomeProps) => {
   const Logo = require('../assets/SkillUp_logo.mp4')
 
   const fetchdata = () => {
-    return fetch('https://c26d-2401-4900-1b13-ddbf-f800-f414-6493-644b.ngrok-free.app/')
+    return fetch('https://0d5b-2401-4900-54d3-d32f-a99c-4be4-4e20-f431.ngrok-free.app/')
       .then(response => response.json())
       .then(res => { return console.log(res) })
       .catch(error => console.log(error))
@@ -36,7 +38,7 @@ const WelcomeScreen = ({ navigation }: HomeProps) => {
     setmetadata([])
     setheadertitle('Search results')
     try {
-      const searchresult = await fetch('https://c26d-2401-4900-1b13-ddbf-f800-f414-6493-644b.ngrok-free.app/customsearch',
+      const searchresult = await fetch('https://0d5b-2401-4900-54d3-d32f-a99c-4be4-4e20-f431.ngrok-free.app/customsearch',
         {
           method:'post',
           headers: {
@@ -65,14 +67,16 @@ const WelcomeScreen = ({ navigation }: HomeProps) => {
 
   useEffect(() => {
     fetchdata()
-  }, [])
+  },[])
+  useFocusEffect(
+    useCallback(() => {
+      StatusBar.setBackgroundColor('rgb(25,42,86)');
+      StatusBar.setBarStyle('light-content');
+    }, [])
+  );
 
   return (
     <SafeAreaView style={styles.homecontainer}>
-      <StatusBar
-        backgroundColor={'rgb(25,42,86)'}
-        barStyle={'light-content'}
-      />
       <View style={styles.header}>
         <View style={[styles.inpfield, { borderWidth: inpwidth }]}>
           {/* <View><Text>SkillUp</Text></View> */}
@@ -122,7 +126,7 @@ const WelcomeScreen = ({ navigation }: HomeProps) => {
         </View>}
         {!loader&&<TouchableOpacity
           style={styles.expandbtn}
-          onPress={() => { navigation.navigate('VideoList',{metadata,headertitle})}}
+          onPress={() => { navigation.getParent<TabProps['navigation']>().navigate('VideoList',{metadata,headertitle})}}
         >
           <Text style={{ fontFamily: 'Inter_24pt-Regular', fontSize: 16, color: 'rgb(25,42,86)' }}>Expand</Text>
         </TouchableOpacity>}
@@ -211,8 +215,9 @@ const styles = StyleSheet.create({
     fontWeight: '900'
   },
   rec_videos: {
-    borderRadius: 20,
-    paddingVertical: 40,
+    borderTopRightRadius:40,
+    borderTopLeftRadius:40,
+    paddingTop:40,
     paddingHorizontal: 20,
     position: 'absolute',
     bottom: '0%',
@@ -224,9 +229,10 @@ const styles = StyleSheet.create({
     // shadowOffset:{width:2,height:10}
   },
   list_videos: {
-    borderRadius: 20,
+    // borderTopRightRadius:40,
+    // borderTopLeftRadius:40,
     width: '100%',
-    height: 'auto',
+    height: '100%',
     backgroundColor: '#FBFCF8',
   },
   videocontainer: {
