@@ -42,4 +42,4 @@ def recommender(id):
 
     # get_recommendations('BGTx91t8q50')
 
-    return {"message": "Hello World !","result" : get_recommendations(id)}
+    return {"message": "Got recommendations !","result" : get_recommendations(id)}

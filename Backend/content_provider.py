@@ -11,6 +11,7 @@ KEY = os.getenv("KEY")
 CX = os.getenv("CX")
 URL1 = os.getenv("URL1")
 URL2 = os.getenv("URL2")
+URL3 = os.getenv("URL3")
 
 def customsearch(query):
     metadata = []
@@ -77,12 +78,12 @@ def fetchvideos(query):
 def fetchcourses(query):
     metadata = []  
     params = {
-        'q' : query,
         'key' : KEY,
         'part' : 'snippet',
         'type' : 'playlist',
         'maxResults' : '50',    
-        'regionCode' : 'IN'
+        'regionCode' : 'IN',
+        'q' : query
     }
     
     response = requests.get(URL2, params=params)
@@ -96,6 +97,30 @@ def fetchcourses(query):
                 'title':results['items'][i]['snippet']['title'],
                 'description':results['items'][i]['snippet']['description'],
                 'thumbnails':results['items'][i]['snippet']['thumbnails']['medium']['url']        
+            }
+        )
+    
+    return metadata
+
+def fetchcoursevideos(query):
+    metadata = []  
+    params = {
+        'key' : KEY,
+        'part' : 'snippet,id',
+        # 'id': query,
+        'maxResults' : '50',    
+        'regionCode' : 'IN',
+        'playlistId' : query,
+    }
+    response = requests.get(URL3, params=params)
+    results = response.json()
+    print(results)
+    # metadata.append({'nextPageToken':results['nextPageToken']})
+    for i in range(len(results['items'])):
+        metadata.append(
+            {
+                'videoID':results['items'][i]['snippet']['resourceId']['videoId'],
+                'title':results['items'][i]['snippet']['title'],      
             }
         )
     

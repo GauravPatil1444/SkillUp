@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from recommender import recommender
-from content_provider import fetchcourses,customsearch
+from content_provider import fetchcourses,customsearch, fetchcoursevideos
 from transcript import transcript
 import json
 from pydantic import BaseModel
@@ -91,7 +91,15 @@ async def search(item:Item):
     q = data["q"]
     return customsearch(q)
 
-@app.get("/fetchcourses")
-def sendcourses():
-    q = "java"
+@app.post("/fetchcourses")
+def sendcourses(item:Item):
+    data = item.model_dump()
+    q = data["q"]
     return fetchcourses(q)
+
+@app.post("/fetchcoursevideos")
+def sendcoursevideos(item:Item):
+    data = item.model_dump()
+    q = data["q"]
+    print(q)
+    return fetchcoursevideos(q)

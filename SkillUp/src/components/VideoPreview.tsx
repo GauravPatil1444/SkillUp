@@ -38,7 +38,7 @@ const VideoPreview = ({ route }: StackVideoProps) => {
 
     setloader(true)
     try {
-      const response = await fetch('https://0d5b-2401-4900-54d3-d32f-a99c-4be4-4e20-f431.ngrok-free.app/transcript',
+      const response = await fetch('https://d8cc-202-160-145-20.ngrok-free.app/transcript',
         {
           method: 'POST',
           headers:{
@@ -70,7 +70,7 @@ const VideoPreview = ({ route }: StackVideoProps) => {
     // console.log(saveopts);
     setqueattempted(index);
     if(saveopts[index][1]===opts&&visited.includes(index)===false){
-      console.log(visited);
+      // console.log(visited);
       setcount(count+1);
     }
     setvisited(prevvisited=>[...prevvisited,index])

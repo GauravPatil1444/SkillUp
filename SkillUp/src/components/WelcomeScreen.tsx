@@ -21,7 +21,7 @@ const WelcomeScreen = ({ navigation }:StackProps) => {
   const [searchinp, setsearchinp] = useState('')
   const [metadata, setmetadata] = useState<videometadata[]>([])
   const [loader, setloader] = useState(true)
-  const [headertitle, setheadertitle] = useState('Recommended')
+  // const [headertitle, setheadertitle] = useState('Recommended')
 
   const topics = ['UmnCZ7-9yDY', 'GwIo3gDZCVQ', 'A74TOX803D0', 'xk4_1vDrzzo', 'ntLJmHOJ0ME', 'Pj0neYUp9Tc', 'dz458ZkBMak', 'eIrMbAQSU34', 'gJ9DYC-jswo', 't8pPdKYpowI']
   const Logo = require('../assets/SkillUp_logo.mp4')
@@ -36,9 +36,9 @@ const WelcomeScreen = ({ navigation }:StackProps) => {
   const search = async ()=>{
     setloader(true);
     setmetadata([])
-    setheadertitle('Search results')
+    // setheadertitle('Search results')
     try {
-      const searchresult = await fetch('https://0d5b-2401-4900-54d3-d32f-a99c-4be4-4e20-f431.ngrok-free.app/customsearch',
+      const searchresult = await fetch('https://d8cc-202-160-145-20.ngrok-free.app/customsearch',
         {
           method:'post',
           headers: {
@@ -126,7 +126,7 @@ const WelcomeScreen = ({ navigation }:StackProps) => {
         </View>}
         {!loader&&<TouchableOpacity
           style={styles.expandbtn}
-          onPress={() => { navigation.getParent<TabProps['navigation']>().navigate('VideoList',{metadata,headertitle})}}
+          onPress={() => { navigation.getParent<TabProps['navigation']>().navigate('VideoList',{metadata})}}
         >
           <Text style={{ fontFamily: 'Inter_24pt-Regular', fontSize: 16, color: 'rgb(25,42,86)' }}>Expand</Text>
         </TouchableOpacity>}

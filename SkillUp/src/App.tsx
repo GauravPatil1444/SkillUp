@@ -18,8 +18,7 @@ export type StackParamList = {
 export type TabParamList = {
   StackNavigation: undefined;
   VideoList: {
-    metadata: any[] | string[],
-    headertitle: string
+    metadata: any[] | string[]
   };
   Settings: undefined;
   Courses: undefined;
@@ -41,7 +40,7 @@ const TabBarBtn = (props:any) => {
       style={styles.TabBarbtn}>
       {screens=="home"?<Image style={{ width: 25, height: 25 }} source={focused?require('./assets/home.png'):require('./assets/home_inactive.png')} />:
         screens == "videos"?<Image style={{ width: 28, height: 28 }} source={focused?require('./assets/videos.png'):require('./assets/videos_inactive.png')} />:
-        screens == "courses"?<Image style={{ width: 28, height: 28 }} source={focused?require('./assets/course.png'):require('./assets/course_inactive.png')} />:
+        screens == "courses"?<Image style={{ width: 30, height: 30 }} source={focused?require('./assets/course.png'):require('./assets/course_inactive.png')} />:
         <Image style={{ width: 28, height: 28 }} source={focused?require('./assets/setting.png'):require('./assets/setting_inactive.png')} />
       }
     </TouchableOpacity>
@@ -107,8 +106,9 @@ const App = () => {
           options={{
             headerShown:false,
             tabBarStyle:{
-              backgroundColor:'#FBFCF8'
+              backgroundColor:'#FBFCF8',
             },
+            tabBarHideOnKeyboard:true,
             tabBarButton: (props) => (
               <TabBarBtn {...props} screens={screens[2]}/>
             ),

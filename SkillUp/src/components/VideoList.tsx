@@ -3,9 +3,8 @@ import YoutubeIframe from 'react-native-youtube-iframe'
 import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import React,{useCallback} from 'react'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
-// import { StackParamList } from '../App'
 import { TabParamList } from '../App'
-// type StackProps = NativeStackScreenProps<StackParamList, 'VideoPreview'>
+
 type TabProps = NativeStackScreenProps<TabParamList, 'VideoList'>
 
 // const videolist = ['UmnCZ7-9yDY', 'GwIo3gDZCVQ', 'A74TOX803D0', 'xk4_1vDrzzo', 'ntLJmHOJ0ME', 'Pj0neYUp9Tc', 'dz458ZkBMak', 'eIrMbAQSU34', 'gJ9DYC-jswo', 't8pPdKYpowI']
@@ -23,7 +22,7 @@ const VideoList = ({route}:TabProps) => {
   let metadata = [];
 
   try{
-    metadata = route.params.metadata
+    metadata = route.params.metadata;
   }
   catch{
     return(
@@ -36,7 +35,7 @@ const VideoList = ({route}:TabProps) => {
 
   return (
     <View style={styles.container}>
-      <FlatList scrollEventThrottle={200} contentContainerStyle={{ alignItems: 'center' }} style={[styles.rec_videos]}
+      <FlatList contentContainerStyle={{ alignItems: 'center' }} style={[styles.rec_videos]}
         data={metadata}
         initialNumToRender={4}
         maxToRenderPerBatch={4}
