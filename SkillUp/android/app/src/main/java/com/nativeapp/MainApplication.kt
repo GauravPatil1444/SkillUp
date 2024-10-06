@@ -1,4 +1,4 @@
-package com.skillup
+package com.gauravpatil.skillup
 
 import android.app.Application
 import com.facebook.react.PackageList

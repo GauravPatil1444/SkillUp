@@ -2,7 +2,6 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, StatusBar, Alert, T
 import React, { useCallback } from 'react'
 import YoutubeIframe from 'react-native-youtube-iframe'
 import { useState, useEffect} from 'react'
-import Video from 'react-native-video'
 import { useFocusEffect } from '@react-navigation/native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { StackParamList, TabParamList } from '../App'
@@ -98,13 +97,7 @@ const WelcomeScreen = ({ navigation }:StackProps) => {
 
         <Text style={styles.headertxt}>Welcome, Gaurav</Text>
         
-        <Video
-          source={Logo}
-          repeat={true}
-          paused={false}
-          resizeMode='contain'
-          style={styles.logo}
-        />
+      
 
         <View style={styles.videoTopics}>
           <FlatList

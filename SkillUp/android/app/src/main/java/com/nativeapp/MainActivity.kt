@@ -1,4 +1,4 @@
-package com.skillup
+package com.gauravpatil.skillup
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "505952169629",
+    "project_id": "skillup-ai1444",
+    "storage_bucket": "skillup-ai1444.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:505952169629:android:6badbad03c1236b2e66e74",
+        "android_client_info": {
+          "package_name": "com.gauravpatil.skillup"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBHI2ZLhh87PVEQTjAe4NumDswNgxBijsw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
