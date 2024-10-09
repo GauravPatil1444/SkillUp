@@ -12,6 +12,7 @@ type TabProps = NativeStackScreenProps<TabParamList, 'VideoList'>
 const VideoList = ({route}:TabProps) => {
 
   const navigation = useNavigation<string|any>()
+  
   useFocusEffect(
     useCallback(() => {
       StatusBar.setBackgroundColor('#FBFCF8');

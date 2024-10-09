@@ -1,12 +1,14 @@
 import { createStackNavigator } from '@react-navigation/stack';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer} from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useState, useEffect } from 'react';
 import WelcomeScreen from './components/WelcomeScreen';
 import VideoList from './components/VideoList';
 import VideoPreview from './components/VideoPreview';
 import Settings from './components/Settings';
 import { Image, StyleSheet, TouchableOpacity } from 'react-native';
 import Courses from './components/Courses';
+import Authentication from './components/Authentication';
 
 export type StackParamList = {
   WelcomeScreen: undefined;
@@ -17,6 +19,8 @@ export type StackParamList = {
 
 export type TabParamList = {
   StackNavigation: undefined;
+  Authentication: undefined|any;
+  CreateAccount: undefined|any;
   VideoList: {
     metadata: any[] | string[]
   };
@@ -26,7 +30,6 @@ export type TabParamList = {
 
 const stack = createStackNavigator<StackParamList>();
 const tab = createBottomTabNavigator<TabParamList>();
-
 
 const TabBarBtn = (props:any) => {
   
@@ -70,11 +73,13 @@ const StackNavigation = () => {
 }
 
 const App = () => {
+
   const screens = ["home","videos","courses","Settings"]
+
   return (
     <NavigationContainer>
 
-      <tab.Navigator initialRouteName="StackNavigation" backBehavior="initialRoute">
+      <tab.Navigator initialRouteName={"StackNavigation"} backBehavior="initialRoute">
         <tab.Screen
           name="StackNavigation"
           component={StackNavigation}
@@ -84,8 +89,18 @@ const App = () => {
             tabBarButton: (props) => (
               <TabBarBtn {...props} screens={screens[0]}/>
             ),
-            
           })}
+        />
+        <tab.Screen
+          name="Authentication"
+          component={Authentication}
+          options={{
+            headerShown:false,
+            tabBarStyle:{
+              display:'none'
+            },
+            tabBarButton: ()=> null
+          }}
         />
         <tab.Screen
           name="VideoList"

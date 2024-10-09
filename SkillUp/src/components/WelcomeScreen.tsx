@@ -5,6 +5,7 @@ import { useState, useEffect} from 'react'
 import { useFocusEffect } from '@react-navigation/native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { StackParamList, TabParamList } from '../App'
+import { firebase_auth } from '../../firebaseConfig'
 
 type TabProps = NativeStackScreenProps<TabParamList, 'StackNavigation'>
 type StackProps = NativeStackScreenProps<StackParamList, 'WelcomeScreen'>
@@ -13,8 +14,17 @@ const WelcomeScreen = ({ navigation }:StackProps) => {
 
   interface videometadata {
     videoID:string,
-    title:string
+    title:string;
   }
+
+  useEffect(() => {
+    firebase_auth.onAuthStateChanged((user)=>{
+      if(user===null){
+        navigation.getParent<TabProps['navigation']>().navigate('Authentication');
+      }
+      // console.log(user);
+    })
+  },[])
 
   const [inpwidth, setinpwidth] = useState(1)
   const [searchinp, setsearchinp] = useState('')

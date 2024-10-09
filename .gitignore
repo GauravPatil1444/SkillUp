@@ -73,6 +73,9 @@ SkillUp/!.yarn/releases
 SkillUp/!.yarn/sdks
 SkillUp/!.yarn/versions
 SkillUp/src/assets/*.json
+SkillUp/android/app/google-services.json
+SkillUp/firebaseConfig.ts
+SkillUp/tsconfig.json
 Backend/.env
 Backend/data.json
 Backend/pipfile
