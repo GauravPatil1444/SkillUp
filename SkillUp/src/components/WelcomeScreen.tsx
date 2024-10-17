@@ -1,64 +1,88 @@
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, StatusBar, Alert, TextInput, SafeAreaView } from 'react-native'
-import React, { useCallback } from 'react'
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, StatusBar, Alert, TextInput, SafeAreaView, Image, Dimensions } from 'react-native'
+import React = require('react')
+import { useCallback } from 'react'
 import YoutubeIframe from 'react-native-youtube-iframe'
-import { useState, useEffect} from 'react'
+import { useState, useEffect } from 'react'
 import { useFocusEffect } from '@react-navigation/native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { StackParamList, TabParamList } from '../App'
 import { firebase_auth } from '../../firebaseConfig'
+import { collection, getDocs } from 'firebase/firestore'
+import { db } from '../../firebaseConfig'
 
 type TabProps = NativeStackScreenProps<TabParamList, 'StackNavigation'>
 type StackProps = NativeStackScreenProps<StackParamList, 'WelcomeScreen'>
 
-const WelcomeScreen = ({ navigation }:StackProps) => {
+const WelcomeScreen = ({ navigation }: StackProps) => {
 
   interface videometadata {
-    videoID:string,
-    title:string;
+    videoID: string,
+    title: string;
   }
 
   useEffect(() => {
-    firebase_auth.onAuthStateChanged((user)=>{
-      if(user===null){
+    firebase_auth.onAuthStateChanged((user) => {
+      if (user === null) {
         navigation.getParent<TabProps['navigation']>().navigate('Authentication');
       }
       // console.log(user);
     })
-  },[])
+  }, [])
+  useEffect(() => {
+    fetchdata();
+  }, [])
+
 
   const [inpwidth, setinpwidth] = useState(1)
   const [searchinp, setsearchinp] = useState('')
   const [metadata, setmetadata] = useState<videometadata[]>([])
   const [loader, setloader] = useState(true)
-  // const [headertitle, setheadertitle] = useState('Recommended')
+  const [userData, setuserData] = useState<any>([])
+  const [topics, settopics] = useState<string[]>([])
+  const [newUser, setnewUser] = useState(false)
 
-  const topics = ['UmnCZ7-9yDY', 'GwIo3gDZCVQ', 'A74TOX803D0', 'xk4_1vDrzzo', 'ntLJmHOJ0ME', 'Pj0neYUp9Tc', 'dz458ZkBMak', 'eIrMbAQSU34', 'gJ9DYC-jswo', 't8pPdKYpowI']
-  const Logo = require('../assets/SkillUp_logo.mp4')
+  // const topics = ['UmnCZ7-9yDY', 'GwIo3gDZCVQ', 'A74TOX803D0', 'xk4_1vDrzzo', 'ntLJmHOJ0ME', 'Pj0neYUp9Tc', 'dz458ZkBMak', 'eIrMbAQSU34', 'gJ9DYC-jswo', 't8pPdKYpowI']
+  const Logo = require('../assets/Logo.png')
 
-  const fetchdata = () => {
-    return fetch('https://0d5b-2401-4900-54d3-d32f-a99c-4be4-4e20-f431.ngrok-free.app/')
-      .then(response => response.json())
-      .then(res => { return console.log(res) })
-      .catch(error => console.log(error))
+  const fetchdata = async () => {
+    try{
+      const RNFS = require('react-native-fs');
+      const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
+      const file = await RNFS.readFile(path, 'utf8');
+      const user_preferences = JSON.parse(file);
+      setuserData(user_preferences);
+      console.log(user_preferences);
+      settopics(Object.keys(user_preferences["Topics"]));
+    }
+    catch{
+      const RNFS = require('react-native-fs');
+      firebase_auth.onAuthStateChanged( async (user)=>{
+        const docRef = collection(db, "users",`${user?.uid}/UserPreferences`);
+        const docSnap = await getDocs(docRef);
+        setuserData(JSON.parse(JSON.stringify(docSnap.docs[0].data())));
+        const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
+        RNFS.writeFile(path, JSON.stringify(docSnap.docs[0].data()), 'utf8')
+      })
+    }
   }
 
-  const search = async ()=>{
+  const search = async () => {
+    setmetadata([]);
     setloader(true);
-    setmetadata([])
     // setheadertitle('Search results')
     try {
-      const searchresult = await fetch('https://d8cc-202-160-145-20.ngrok-free.app/customsearch',
+      const searchresult = await fetch('https://09e8-202-160-145-189.ngrok-free.app/customsearch',
         {
-          method:'post',
+          method: 'post',
           headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
           },
-          body:JSON.stringify({"q":searchinp})
+          body: JSON.stringify({ "q": searchinp })
         }
       )
       let result = await searchresult.json()
-      if(result['error']){
+      if (result['error']) {
         Alert.alert(result.error)
       }
       
@@ -66,17 +90,29 @@ const WelcomeScreen = ({ navigation }:StackProps) => {
         result[i]['videoID'] = result[i]['videoID'].split('=')[1];
         setmetadata(prevMetadata => [...prevMetadata, result[i]]);
       }
+      // await new Promise(r => setTimeout(r, 1000));
       setloader(false)
     }
-    catch(error){
+    catch (error) {
       console.log(error)
       Alert.alert('Something went wrong !');
     }
   }
 
-  useEffect(() => {
-    fetchdata()
-  },[])
+  const handleTopic = (item: string) => {
+    setloader(true);
+    setsearchinp(item);
+    // setmetadata([]);
+    if (userData["Topics"][item].length != 0) {
+      setloader(false);
+      setmetadata(prevMetadata => [...prevMetadata, userData["Topics"][item]]);
+    }
+    else {
+      // console.log("searched", searchinp);
+      search();
+    }
+  }
+
   useFocusEffect(
     useCallback(() => {
       StatusBar.setBackgroundColor('rgb(25,42,86)');
@@ -103,43 +139,46 @@ const WelcomeScreen = ({ navigation }:StackProps) => {
             onChangeText={setsearchinp}
             onSubmitEditing={search}
           />
+          <TouchableOpacity style={{justifyContent:'center'}} onPress={()=>{search()}}>
+            <Image style={styles.searchImg} source={require('../assets/search.png')}/>
+          </TouchableOpacity>
         </View>
 
-        <Text style={styles.headertxt}>Welcome, Gaurav</Text>
-        
-      
+        {userData.length!=0&&<Text style={styles.headertxt}>Welcome, {userData["UserDetails"]["name"]}</Text>}
+        <Image style={[{width: Dimensions.get('window').width / 3.5, height: Dimensions.get('window').width / 3.5}]} source={Logo} />
 
-        <View style={styles.videoTopics}>
+        {topics.length != 0 && <View style={styles.videoTopics}>
           <FlatList
-            contentContainerStyle={{gap:5}}
+            contentContainerStyle={{ gap: 5 }}
             horizontal={true}
             data={topics}
-            renderItem={({item})=>
-              <TouchableOpacity style={styles.topicBar}>
-                <Text style={{fontFamily:'Inter_24pt-Regular',color:'#FBFCF8'}}>{item}</Text>
+            renderItem={({ item }) =>
+              <TouchableOpacity style={styles.topicBar} onPress={() => { handleTopic(item) }}>
+                <Text style={{ fontFamily: 'Inter_24pt-Regular', color: '#FBFCF8' }}>{item}</Text>
               </TouchableOpacity>
             }
           >
-          </FlatList>   
-        </View>
+          </FlatList>
+        </View>}
       </View>
       <View style={styles.rec_videos}>
-        {loader&&<View style={{flex:1,alignItems:'center',width:'100%',height:'auto'}}>
-          <Text style={{color:'red'}}>Loading....</Text>
+        {loader && <View style={{ flex: 1, alignItems: 'center', width: '100%', height: 'auto' }}>
+          <Text style={{ color: 'red' }}>Loading....</Text>
         </View>}
-        {!loader&&<TouchableOpacity
+        {!loader && <TouchableOpacity
           style={styles.expandbtn}
-          onPress={() => { navigation.getParent<TabProps['navigation']>().navigate('VideoList',{metadata})}}
+          onPress={() => { navigation.getParent<TabProps['navigation']>().navigate('VideoList', { metadata }) }}
         >
           <Text style={{ fontFamily: 'Inter_24pt-Regular', fontSize: 16, color: 'rgb(25,42,86)' }}>Expand</Text>
+          <Image style={styles.btnImg} source={require('../assets/expand.png')}/>
         </TouchableOpacity>}
 
-        {!loader&&<FlatList contentContainerStyle={{ alignItems: 'center', gap:15 }} style={[styles.list_videos]}
+        {!loader && <FlatList contentContainerStyle={{ alignItems: 'center', gap: 15 }} style={[styles.list_videos]}
           data={metadata}
           initialNumToRender={3}
           maxToRenderPerBatch={3}
           renderItem={({ item }) =>
-            <TouchableOpacity style={styles.videocontainer} onPress={() => {navigation.navigate('VideoPreview',{item})}}>
+            <TouchableOpacity style={styles.videocontainer} onPress={() => { navigation.navigate('VideoPreview', { item }) }}>
               <YoutubeIframe
                 height={180}
                 videoId={item.videoID}
@@ -156,28 +195,41 @@ const WelcomeScreen = ({ navigation }:StackProps) => {
   )
 }
 const styles = StyleSheet.create({
-  topicBar:{
-    backgroundColor:'rgba(165, 190, 252, 0.197)',
-    padding:4,
-    borderRadius:8,
-    borderWidth:1,
-    borderColor:'#FBFCF8'
-  },
-  videoTopics:{
-    flexDirection:'row',
+  searchImg:{
     position:'absolute',
-    bottom:5,
-    paddingHorizontal:10
+    right: 10,
+    height: 20,
+    width: 20,
+  },
+  btnImg:{
+    height: 16,
+    width: 16,
+  },
+  topicBar: {
+    backgroundColor: 'rgba(165, 190, 252, 0.197)',
+    padding: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#FBFCF8'
+  },
+  videoTopics: {
+    flexDirection: 'row',
+    position: 'absolute',
+    bottom: 8,
+    paddingHorizontal: 10
   },
   expandbtn: {
     position: 'absolute',
     right: 30,
-    top:5,
-    borderRadius:8,
-    padding:5,
+    top: 5,
+    borderRadius: 8,
+    padding: 5,
     backgroundColor: 'rgba(165, 190, 252, 0.197)',
     width: 'auto',
     height: 'auto',
+    flexDirection:'row',
+    gap:5,
+    alignItems:'center'
   },
   logo: {
     width: 150,
@@ -210,22 +262,24 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgb(25,42,86)',
     width: '100%',
     height: '35%',
+    marginTop:8,
+    gap:10
   },
   headertxt: {
     color: '#FBFCF8',
     fontFamily: 'Inter_24pt-Regular',
-    fontSize: 30,
+    fontSize: 22,
     fontWeight: '900'
   },
   rec_videos: {
-    borderTopRightRadius:40,
-    borderTopLeftRadius:40,
-    paddingTop:40,
+    borderTopRightRadius: 40,
+    borderTopLeftRadius: 40,
+    paddingTop: 40,
     paddingHorizontal: 20,
     position: 'absolute',
     bottom: '0%',
     width: '100%',
-    height: '65%',
+    height: '64%',
     // backgroundColor:'rgb(25,42,86)',
     backgroundColor: '#FBFCF8',
     elevation: 3

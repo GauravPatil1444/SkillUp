@@ -92,9 +92,9 @@ def fetchcourses(query):
     for i in range(len(results['items'])):
         metadata.append(
             {
-                'playlistId':results['items'][i]['id']['playlistId'],
                 'channelTitle':results['items'][i]['snippet']['channelTitle'],
                 'title':results['items'][i]['snippet']['title'],
+                'playlistId':results['items'][i]['id']['playlistId'],
                 'description':results['items'][i]['snippet']['description'],
                 'thumbnails':results['items'][i]['snippet']['thumbnails']['medium']['url']        
             }

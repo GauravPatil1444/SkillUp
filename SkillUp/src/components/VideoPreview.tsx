@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Alert, FlatList,StatusBar, ScrollView } from 'react-native'
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import YoutubeIframe from 'react-native-youtube-iframe'
 import { useFocusEffect } from '@react-navigation/native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
@@ -15,6 +15,7 @@ const VideoPreview = ({ route }: StackVideoProps) => {
     options: string[]
   }
 
+  const RNFS = require('react-native-fs');
 
   const { item } = route.params;
   const [save, setsave] = useState(false)
@@ -27,12 +28,21 @@ const VideoPreview = ({ route }: StackVideoProps) => {
   const [count, setcount] = useState(0)
   const [visited, setvisited] = useState<number[]>([])
 
-  useFocusEffect(
-    useCallback(() => {
-      StatusBar.setBackgroundColor('#FBFCF8');
-      StatusBar.setBarStyle('dark-content');
-    }, [])
-  );
+  const writedata = async ()=>{
+    const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
+    const file = await RNFS.readFile(path, 'utf8');
+    let user_preferences = await JSON.parse(file);
+    user_preferences["history"].push(item);
+    await RNFS.writeFile(path, JSON.stringify(user_preferences), 'utf8')
+  }
+  const savedata = async ()=>{
+    const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
+    const file = await RNFS.readFile(path, 'utf8');
+    let user_preferences = await JSON.parse(file);
+    console.log(user_preferences);
+    user_preferences["saved"].push(item);
+    await RNFS.writeFile(path, JSON.stringify(user_preferences), 'utf8')
+  }
 
   const getquiz = async () => {
 
@@ -78,6 +88,14 @@ const VideoPreview = ({ route }: StackVideoProps) => {
     setselected(optindex)
   }
 
+  useFocusEffect(
+    useCallback(() => {
+      StatusBar.setBackgroundColor('#FBFCF8');
+      StatusBar.setBarStyle('dark-content');
+      writedata();
+    }, [])
+  );
+
   return (
     <>
       <View style={styles.videocontainer}>
@@ -89,7 +107,7 @@ const VideoPreview = ({ route }: StackVideoProps) => {
         <Text style={styles.videoTitle}>{item.title}</Text>
       </View>
       {quizdata.length == 0 &&<View style={styles.btnspace}>
-        <TouchableOpacity style={styles.btns} onPress={() => { setsave(!save) }} >
+        <TouchableOpacity style={styles.btns} onPress={() => { setsave(!save),savedata() }} >
           <Text style={styles.btntitle}>{save ? 'Saved' : 'Save video'}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.btns} onPress={getquiz}>

@@ -1,23 +1,22 @@
 import { View, Text, StyleSheet, StatusBar, SafeAreaView, TextInput, Alert, TouchableOpacity, FlatList, Dimensions, Image, ScrollView } from 'react-native'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useState, useEffect } from 'react'
 import { useFocusEffect } from '@react-navigation/native';
 import YoutubeIframe from 'react-native-youtube-iframe';
 import { useNavigation } from '@react-navigation/native';
-// import { NativeStackScreenProps } from '@react-navigation/native-stack'
-// import { StackParamList } from '../App'
+import { NativeStackScreenProps } from '@react-navigation/native-stack'
+import { TabParamList } from '../App'
 
-// type StackProps = NativeStackScreenProps<StackParamList, 'VideoPreview'>
+type TabProps = NativeStackScreenProps<TabParamList, 'Courses'>
 
-
-const Courses = () => {
+const Courses = ({route}:TabProps) => {
 
   const navigation = useNavigation<string|any>();
 
   interface coursemetadata {
-    playlistId: string,
     channelTitle: string,
-    title: string,
     description: string,
+    playlistId: string,
+    title: string,
     thumbnails: string
   }
 
@@ -33,6 +32,9 @@ const Courses = () => {
   const [viewcourse, setviewcourse] = useState(false)
   const [coursevideolist, setcoursevideolist] = useState<coursevideolist[]>([])
   const [courseMetadata, setcourseMetadata] = useState<string[]>([])
+  const [Enrolltxt, setEnrolltxt] = useState('Enroll now !')
+
+  const RNFS = require('react-native-fs'); 
 
   useFocusEffect(
     useCallback(() => {
@@ -44,14 +46,28 @@ const Courses = () => {
         StatusBar.setBackgroundColor('#FBFCF8');
         StatusBar.setBarStyle('dark-content');
       }
+      
     }, [,viewcourse])
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      try{
+        const item:any = route.params;
+        console.log("Route",item);
+        opencourse(item);
+      }
+      catch{
+        console.log("Non redirected courseView");
+      }
+    }, [])
   );
 
   const search = async () => {
     setloader(true);
     setmetadata([])
     try {
-      const searchresult = await fetch('https://d8cc-202-160-145-20.ngrok-free.app/fetchcourses',
+      const searchresult = await fetch('https://46a7-202-160-145-187.ngrok-free.app/fetchcourses',
         {
           method: 'post',
           headers: {
@@ -78,20 +94,30 @@ const Courses = () => {
     }
   }
 
-  const opencourse = async (item: coursemetadata) => {
-    // console.log(item);
+  const opencourse = async (item: any) => {
+    let query = '';
+    console.log(item);
+    if(item['playlistId']===undefined){
+      query = item[0];
+      console.log(2,query);
+    }
+    else{
+      query = item['playlistId'];
+      console.log(1,query);
+      item  = [item.playlistId,item.channelTitle,item.description,item.title,item.thumbnails]
+    }
     setcoursevideolist([]);
-    setcourseMetadata([item.playlistId, item.channelTitle, item.description, item.title]);
+    setcourseMetadata(item);
     setloader(true);
 
-    const fetchvideos = await fetch('https://d8cc-202-160-145-20.ngrok-free.app/fetchcoursevideos',
+    const fetchvideos = await fetch('https://46a7-202-160-145-187.ngrok-free.app/fetchcoursevideos',
       {
         method: 'post',
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ "q": item.playlistId })
+        body: JSON.stringify({ "q": query})
       }
     );
     const result = await fetchvideos.json();
@@ -102,6 +128,15 @@ const Courses = () => {
     }
     setloader(false);
     setviewcourse(true);
+  }
+
+  const Enroll = async(item:string[])=>{
+    const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
+    const file = await RNFS.readFile(path, 'utf8');
+    let user_preferences = await JSON.parse(file);
+    user_preferences["courses"].push(item);
+    await RNFS.writeFile(path, JSON.stringify(user_preferences), 'utf8')
+    setEnrolltxt('Enrolled')
   }
 
   return (
@@ -123,6 +158,9 @@ const Courses = () => {
             onChangeText={setsearchinp}
             onSubmitEditing={search}
           />
+          <TouchableOpacity style={{justifyContent:'center'}} onPress={()=>{search()}}>
+            <Image style={styles.searchImg} source={require('../assets/search_dark.png')}/>
+          </TouchableOpacity>
         </View>
       </View>}
       {loader && <View style={{ flex: 1, alignItems: 'center', width: '100%', height: 'auto' }}>
@@ -156,8 +194,8 @@ const Courses = () => {
             <TouchableOpacity style={styles.btns} onPress={()=>setviewcourse(false)}>
               <Text style={{ fontFamily: 'Inter_24pt-Regular', color: '#FBFCF8' }}>Go back</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.btns}>
-              <Text style={{ fontFamily: 'Inter_24pt-Regular', color: '#FBFCF8' }}>Enroll now !</Text>
+            <TouchableOpacity style={styles.btns} onPress={()=>Enroll(courseMetadata)}>
+              <Text style={{ fontFamily: 'Inter_24pt-Regular', color: '#FBFCF8' }}>{Enrolltxt}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -194,6 +232,12 @@ const Courses = () => {
 export default Courses
 
 const styles = StyleSheet.create({
+  searchImg:{
+    position:'absolute',
+    right: 10,
+    height: 20,
+    width: 20,
+  },
   btnSpace:{
     width:'100%',
     flexDirection:'row',

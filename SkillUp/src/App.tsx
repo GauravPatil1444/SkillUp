@@ -1,7 +1,6 @@
 import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer} from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { useState, useEffect } from 'react';
 import WelcomeScreen from './components/WelcomeScreen';
 import VideoList from './components/VideoList';
 import VideoPreview from './components/VideoPreview';
@@ -25,7 +24,13 @@ export type TabParamList = {
     metadata: any[] | string[]
   };
   Settings: undefined;
-  Courses: undefined;
+  Courses: {
+    playlistId: string,
+    channelTitle: string,
+    title: string,
+    description: string,
+    thumbnails: string
+  }|undefined;
 }
 
 const stack = createStackNavigator<StackParamList>();
@@ -53,7 +58,7 @@ const TabBarBtn = (props:any) => {
 
 const StackNavigation = () => {
   return (
-    <stack.Navigator initialRouteName='WelcomeScreen'>
+    <stack.Navigator initialRouteName='WelcomeScreen'> 
       <stack.Screen
         name='WelcomeScreen'
         component={WelcomeScreen}
@@ -79,7 +84,7 @@ const App = () => {
   return (
     <NavigationContainer>
 
-      <tab.Navigator initialRouteName={"StackNavigation"} backBehavior="initialRoute">
+      <tab.Navigator initialRouteName={"StackNavigation"} backBehavior="history">
         <tab.Screen
           name="StackNavigation"
           component={StackNavigation}

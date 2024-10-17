@@ -46,14 +46,16 @@ const Login = ({ navigation }: TabProps) => {
                         "Machine Learning" : [],
                         "Python" : [],
                         "Java" : []
-                    }
-                    
+                    },
+                    "history" : [],
+                    "saved" : [],
+                    "courses" : []
                 }
                 const docRef1 = await addDoc(collection(db, "users",`${user_id}/UserPreferences`), user_preferences);
                 console.log("Document written with ID: ", docRef1.id);
 
                 const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
-                await RNFS.writeFile(path, user_preferences, 'utf8')
+                await RNFS.writeFile(path, JSON.stringify(user_preferences), 'utf8')
 
                 navigation.navigate('StackNavigation')
             }
@@ -71,14 +73,12 @@ const Login = ({ navigation }: TabProps) => {
             const response  = await signInWithEmailAndPassword(firebase_auth,email,password);
             // console.log(response);
             const user_id = response.user.uid;
-            const docRef = collection(db, "users",`${user_id}/UserDetails`);
+            const docRef = collection(db, "users",`${user_id}/UserPreferences`);
             const docSnap = await getDocs(docRef);
-
-            if (!docSnap.empty) {
-                docSnap.forEach((doc)=>{
-                    console.log(doc.data());
-                })
-            }
+            // console.log(docSnap.docs[0].data());
+            const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
+            await RNFS.writeFile(path, JSON.stringify(docSnap.docs[0].data()), 'utf8')
+            
             navigation.navigate('StackNavigation');
         }
         catch(e:any){

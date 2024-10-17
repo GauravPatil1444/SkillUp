@@ -78,5 +78,5 @@ SkillUp/firebaseConfig.ts
 SkillUp/tsconfig.json
 Backend/.env
 Backend/data.json
-Backend/pipfile
+Backend/Pipfile
 Backend/*.lock
