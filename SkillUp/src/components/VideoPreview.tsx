@@ -27,28 +27,86 @@ const VideoPreview = ({ route }: StackVideoProps) => {
   const [queattempted, setqueattempted] = useState(0)
   const [count, setcount] = useState(0)
   const [visited, setvisited] = useState<number[]>([])
+  const [pressCount, setpressCount] = useState(1)
+  const [quizView, setquizView] = useState(false)
 
-  const writedata = async ()=>{
+  const writedata = async (currentID:string)=>{
+    let flag = true;
     const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
     const file = await RNFS.readFile(path, 'utf8');
     let user_preferences = await JSON.parse(file);
-    user_preferences["history"].push(item);
-    await RNFS.writeFile(path, JSON.stringify(user_preferences), 'utf8')
+    await user_preferences["history"].map((i:any,index:number)=>{
+      console.log(index,i.videoID,currentID);
+      if(i.videoID==item.videoID){
+        flag = false;
+      }
+    })
+    if(flag){
+      console.log(1,item.videoID);
+      user_preferences["history"].push(item);
+      await RNFS.writeFile(path, JSON.stringify(user_preferences), 'utf8')
+    }
+    else{
+      console.log(2);
+    }
+
   }
-  const savedata = async ()=>{
+
+  const checkSaved = async ()=>{
+    let flag = true;
     const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
     const file = await RNFS.readFile(path, 'utf8');
     let user_preferences = await JSON.parse(file);
     console.log(user_preferences);
-    user_preferences["saved"].push(item);
-    await RNFS.writeFile(path, JSON.stringify(user_preferences), 'utf8')
+    await user_preferences["saved"].map((i:any,index:number)=>{
+      console.log(index,i.videoID);
+      if(i.videoID==item.videoID){
+        flag = false;
+      }
+    })
+    if(!flag){
+      setsave(true);
+    }
+  }
+
+  const savedata = async ()=>{
+    if(!save){
+      console.log(1,item.videoID);
+      const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
+      const file = await RNFS.readFile(path, 'utf8');
+      let user_preferences = await JSON.parse(file);
+      user_preferences["saved"].push(item);
+      await RNFS.writeFile(path, JSON.stringify(user_preferences), 'utf8')
+      setsave(true);
+    }
+    else{
+      if(pressCount==2){
+        let index = 0;
+        const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
+        const file = await RNFS.readFile(path, 'utf8');
+        let user_preferences = await JSON.parse(file);
+        await user_preferences["saved"].map((saved:string[],i:number)=>{
+          if(saved[0]==item[0]){
+            index = i;
+          }
+        })
+        user_preferences["saved"].splice(index, 1); 
+        setpressCount(1);
+        await RNFS.writeFile(path, JSON.stringify(user_preferences), 'utf8')
+        setsave(false);
+      }
+      else{ 
+        Alert.alert("Already saved !, click again to delete");
+        setpressCount(2);
+      }
+    }
   }
 
   const getquiz = async () => {
 
     setloader(true)
     try {
-      const response = await fetch('https://d8cc-202-160-145-20.ngrok-free.app/transcript',
+      const response = await fetch('https://27b6-2409-40c2-600e-ec5e-f08e-d1c0-df2e-dcf4.ngrok-free.app/transcript',
         {
           method: 'POST',
           headers:{
@@ -68,6 +126,7 @@ const VideoPreview = ({ route }: StackVideoProps) => {
       
       setcount(0)
       setquizdata(data)
+      setquizView(true);
       setloader(false)
     }
     catch (error) {
@@ -88,11 +147,16 @@ const VideoPreview = ({ route }: StackVideoProps) => {
     setselected(optindex)
   }
 
+  useEffect(() => {
+    let currentID = route.params.item.videoID;
+    writedata(currentID);
+    checkSaved();
+  }, [route.params])
+
   useFocusEffect(
     useCallback(() => {
       StatusBar.setBackgroundColor('#FBFCF8');
       StatusBar.setBarStyle('dark-content');
-      writedata();
     }, [])
   );
 
@@ -106,8 +170,8 @@ const VideoPreview = ({ route }: StackVideoProps) => {
         />
         <Text style={styles.videoTitle}>{item.title}</Text>
       </View>
-      {quizdata.length == 0 &&<View style={styles.btnspace}>
-        <TouchableOpacity style={styles.btns} onPress={() => { setsave(!save),savedata() }} >
+      {quizdata.length == 0&&<View style={styles.btnspace}>
+        <TouchableOpacity style={styles.btns} onPress={() => { savedata() }} >
           <Text style={styles.btntitle}>{save ? 'Saved' : 'Save video'}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.btns} onPress={getquiz}>
@@ -117,11 +181,11 @@ const VideoPreview = ({ route }: StackVideoProps) => {
       {loader && <View style={{ flex: 1, alignItems: 'center', width: '100%', height: 'auto' }}>
         <Text style={{ color: 'red' }}>Loading....</Text>
       </View>}
-      {quizdata.length != 0 && <View style={styles.quizlayout}>
+      {quizdata.length != 0&& <View style={styles.quizlayout}>
         <View style={styles.header}>
           {/* <Text style={styles.headertxt}>Multiple Choice Questions</Text> */}
           <Text style={styles.headertxt}>Marks obtained : {count}/{quizdata.length}</Text>
-          <TouchableOpacity style={styles.headerbtn}><Text style={{color: 'rgb(25,42,86)',fontWeight:'bold'}}>Close</Text></TouchableOpacity>
+          <TouchableOpacity onPress={()=>{setquizView(false)}} style={styles.headerbtn}><Text style={{color: 'rgb(25,42,86)',fontWeight:'bold'}}>Close</Text></TouchableOpacity>
         </View>
         <FlatList
           initialNumToRender={2}

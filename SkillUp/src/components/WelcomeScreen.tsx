@@ -71,7 +71,7 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
     setloader(true);
     // setheadertitle('Search results')
     try {
-      const searchresult = await fetch('https://09e8-202-160-145-189.ngrok-free.app/customsearch',
+      const searchresult = await fetch('https://27b6-2409-40c2-600e-ec5e-f08e-d1c0-df2e-dcf4.ngrok-free.app/customsearch',
         {
           method: 'post',
           headers: {
@@ -187,7 +187,7 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
               <Text style={styles.videoTitle}>{item.title}</Text>
             </TouchableOpacity>
           }
-          keyExtractor={item => item.videoID}
+          keyExtractor={item => item.title}
         >
         </FlatList>}
       </View>

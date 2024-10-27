@@ -33,6 +33,7 @@ const Courses = ({route}:TabProps) => {
   const [coursevideolist, setcoursevideolist] = useState<coursevideolist[]>([])
   const [courseMetadata, setcourseMetadata] = useState<string[]>([])
   const [Enrolltxt, setEnrolltxt] = useState('Enroll now !')
+  const [pressCount, setpressCount] = useState(1)
 
   const RNFS = require('react-native-fs'); 
 
@@ -50,24 +51,19 @@ const Courses = ({route}:TabProps) => {
     }, [,viewcourse])
   );
 
-  useFocusEffect(
-    useCallback(() => {
-      try{
-        const item:any = route.params;
-        console.log("Route",item);
-        opencourse(item);
-      }
-      catch{
-        console.log("Non redirected courseView");
-      }
-    }, [])
-  );
+  useEffect(() => {
+    setcoursevideolist([]);
+    const item:any = route.params;
+    console.log("Route",item);
+    opencourse(item);
+  }, [route.params])
+
 
   const search = async () => {
     setloader(true);
     setmetadata([])
     try {
-      const searchresult = await fetch('https://46a7-202-160-145-187.ngrok-free.app/fetchcourses',
+      const searchresult = await fetch('https://27b6-2409-40c2-600e-ec5e-f08e-d1c0-df2e-dcf4.ngrok-free.app/fetchcourses',
         {
           method: 'post',
           headers: {
@@ -99,10 +95,12 @@ const Courses = ({route}:TabProps) => {
     console.log(item);
     if(item['playlistId']===undefined){
       query = item[0];
+      checkEnroll(query);
       console.log(2,query);
     }
     else{
       query = item['playlistId'];
+      checkEnroll(query);
       console.log(1,query);
       item  = [item.playlistId,item.channelTitle,item.description,item.title,item.thumbnails]
     }
@@ -110,7 +108,7 @@ const Courses = ({route}:TabProps) => {
     setcourseMetadata(item);
     setloader(true);
 
-    const fetchvideos = await fetch('https://46a7-202-160-145-187.ngrok-free.app/fetchcoursevideos',
+    const fetchvideos = await fetch('https://27b6-2409-40c2-600e-ec5e-f08e-d1c0-df2e-dcf4.ngrok-free.app/fetchcoursevideos',
       {
         method: 'post',
         headers: {
@@ -130,13 +128,63 @@ const Courses = ({route}:TabProps) => {
     setviewcourse(true);
   }
 
-  const Enroll = async(item:string[])=>{
+  const checkEnroll = async(item:string)=>{
+    let flag = true;
     const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
     const file = await RNFS.readFile(path, 'utf8');
     let user_preferences = await JSON.parse(file);
-    user_preferences["courses"].push(item);
-    await RNFS.writeFile(path, JSON.stringify(user_preferences), 'utf8')
-    setEnrolltxt('Enrolled')
+    console.log(user_preferences);
+    await user_preferences["courses"].map((i:any)=>{
+      console.log(i[0],item);
+      
+      if(i[0]==item){
+        flag = false;
+      }
+    })
+    if(!flag){
+      setEnrolltxt('Enrolled');
+    }
+    else{
+      setEnrolltxt('Enroll now !');
+    }
+  }
+
+  const Enroll = async(item:string[])=>{
+    if(Enrolltxt!="Enrolled"){
+      const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
+      const file = await RNFS.readFile(path, 'utf8');
+      let user_preferences = await JSON.parse(file);
+      user_preferences["courses"].push(item);
+      await RNFS.writeFile(path, JSON.stringify(user_preferences), 'utf8')
+      setEnrolltxt('Enrolled')
+    }
+    else{
+      if(pressCount==2){
+        
+        let index = 0;
+        const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
+        const file = await RNFS.readFile(path, 'utf8');
+        let user_preferences = await JSON.parse(file);
+        // console.log(user_preferences['courses']);
+        await user_preferences["courses"].map((course:string[],i:number)=>{          
+          if(course[0]===item[0]){
+            index = i;
+          }
+        })
+        // delete user_preferences["courses"][index];
+        user_preferences["courses"].splice(index, 1); 
+        setpressCount(1);
+        console.log("Deleted",index);
+        await RNFS.writeFile(path, JSON.stringify(user_preferences), 'utf8')
+        setEnrolltxt('Enroll now !');
+        navigation.navigate('Settings');
+      }
+      else{
+        Alert.alert("Already enrolled, press again to exit the course");
+        setpressCount(2);
+      }
+    }
+
   }
 
   return (

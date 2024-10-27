@@ -19,12 +19,11 @@ const Settings = () => {
 
   const metadata = ['UmnCZ7-9yDY', 'GwIo3gDZCVQ', 'A74TOX803D0', 'xk4_1vDrzzo', 'ntLJmHOJ0ME', 'Pj0neYUp9Tc', 'dz458ZkBMak', 'eIrMbAQSU34', 'gJ9DYC-jswo', 't8pPdKYpowI']
 
-  interface videometadata {
-    videoID: string,
-    title: string;
-  }
 
   const handleSignout = () => {
+    const RNFS = require('react-native-fs');
+    const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
+    RNFS.unlink(path)
     firebase_auth.signOut();
     navigation.navigate('Authentication');
   }
@@ -53,7 +52,7 @@ const Settings = () => {
     setsaved(() => {
       let newData = user_preferences['saved'];
       console.log(JSON.stringify(newData));
-      return newData
+      return newData  
     });
     setcourses(() => {
       const newData = user_preferences['courses'];
@@ -93,7 +92,8 @@ const Settings = () => {
           </View>
           <TouchableOpacity
             style={styles.headerbtns}
-          // onPress={() => { navigation.getParent<TabProps['navigation']>().navigate('VideoList', { metadata }) }}
+            onPress={()=>{navigation.navigate('VideoList',history);
+            }}
           >
             <Text style={{ fontFamily: 'Inter_24pt-Regular', fontSize: 16, color: 'rgb(25,42,86)' }}>View all</Text>
             <Image style={styles.btnImg} source={require('../assets/expand.png')} />
@@ -105,7 +105,7 @@ const Settings = () => {
           maxToRenderPerBatch={2}
           renderItem={({ item }: any) => {
             return (
-              <TouchableOpacity style={{height:150}} onPress={() => { navigation.navigate('VideoPreview', { item }) }}>
+              <TouchableOpacity style={{height:150,backgroundColor:'rgba(165, 190, 252, 0.197)'}} onPress={() => { navigation.navigate('VideoPreview', { item }) }}>
 
                 <YoutubeIframe
                   height={200}
@@ -131,7 +131,7 @@ const Settings = () => {
           </View>
           <TouchableOpacity
             style={styles.headerbtns}
-          // onPress={() => { navigation.getParent<TabProps['navigation']>().navigate('VideoList', { metadata }) }}
+            onPress={()=>{navigation.navigate('VideoList',saved)}}
           >
             <Text style={{ fontFamily: 'Inter_24pt-Regular', fontSize: 16, color: 'rgb(25,42,86)' }}>View all</Text>
             <Image style={styles.btnImg} source={require('../assets/expand.png')} />
@@ -142,7 +142,7 @@ const Settings = () => {
           initialNumToRender={4}
           maxToRenderPerBatch={4}
           renderItem={({ item }: any) =>
-            <TouchableOpacity style={{height:150}} onPress={() => { navigation.navigate('VideoPreview', { item }) }}>
+            item!==null?(<TouchableOpacity style={{height:150,backgroundColor:'rgba(165, 190, 252, 0.197)'}} onPress={() => { navigation.navigate('VideoPreview', { item }) }}>
               <YoutubeIframe
                 height={180}
                 width={250}
@@ -150,7 +150,7 @@ const Settings = () => {
                 play={false}
               />
               {/* <Text style={styles.videoTitle}>{item.title}</Text> */}
-            </TouchableOpacity>
+            </TouchableOpacity>):null
           }
           keyExtractor={item => item}
         >
@@ -163,29 +163,30 @@ const Settings = () => {
           <View style={styles.historyTitle}>
             <Text style={styles.titletxt}>My courses</Text>
           </View>
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={styles.headerbtns}
-          // onPress={() => { navigation.getParent<TabProps['navigation']>().navigate('VideoList', { metadata }) }}
+          
           >
             <Text style={{ fontFamily: 'Inter_24pt-Regular', fontSize: 16, color: 'rgb(25,42,86)' }}>View all</Text>
             <Image style={styles.btnImg} source={require('../assets/expand.png')} />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
         {courses.length != 0 ? <FlatList horizontal={true} contentContainerStyle={{ alignItems: 'center', gap: 15 }} style={[styles.videolist]}
           data={courses}
           initialNumToRender={4}
           maxToRenderPerBatch={4}
           renderItem={({ item }: any) =>
-            <TouchableOpacity key={item.playlistId} style={styles.coursecontainer} onPress={() => { navigation.navigate('Courses', item); }}>
+
+            item!==null?(<TouchableOpacity key={item.playlistId} style={styles.coursecontainer} onPress={() => { navigation.navigate('Courses', item); }}>
               <View style={styles.coursecontainer}>
                 {/* <Text>{item.thumbnails}</Text> */}
-                <Image style={{ width: '100%', height: '100%' }} source={{ uri: item[4] }} resizeMode='contain'></Image>
+                <Image style={{ width: '100%', height: '100%' }} source={{ uri: item[4] }} resizeMode='contain'></Image>  
               </View>
-            </TouchableOpacity>
+            </TouchableOpacity>):null
           }
           keyExtractor={item => item}
         >
-        </FlatList> : <View style={{ width: '100%', height: 140, alignItems: 'center', justifyContent: 'center' }}>
+        </FlatList> : <View style={{ width: '100%', height: 120, alignItems: 'center', justifyContent: 'center' }}>
           <Text style={styles.btntxt}>No courses enrolled</Text>
         </View>}
       </ View>

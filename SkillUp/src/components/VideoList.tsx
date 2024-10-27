@@ -20,10 +20,18 @@ const VideoList = ({route}:TabProps) => {
     }, [])
   );
   
-  let metadata = [];
+  let metadata:any;
 
   try{
-    metadata = route.params.metadata;
+    metadata = [];
+    if(route.params.metadata==undefined){
+      metadata = route.params;
+    }
+    else{
+      metadata = route.params.metadata;
+    }
+    console.log(metadata);
+    
   }
   catch{
     return(
@@ -36,12 +44,13 @@ const VideoList = ({route}:TabProps) => {
 
   return (
     <View style={styles.container}>
+      
       <FlatList contentContainerStyle={{ alignItems: 'center' }} style={[styles.rec_videos]}
         data={metadata}
         initialNumToRender={4}
         maxToRenderPerBatch={4}
         renderItem={({ item }) =>
-          <TouchableOpacity style={styles.videocontainer} onPress={()=>{navigation.navigate('VideoPreview',{item})}}>
+          item!==null?(<TouchableOpacity style={styles.videocontainer} onPress={()=>{navigation.navigate('VideoPreview',{item})}}>
 
             <YoutubeIframe
               height={200}
@@ -49,9 +58,9 @@ const VideoList = ({route}:TabProps) => {
               play={false}
             />
             <Text style={styles.videoTitle}>{item.title}</Text>
-          </TouchableOpacity>
+          </TouchableOpacity>):null
         }
-        keyExtractor={item => item.videoID}
+        keyExtractor={item => item==null?item:item.videoID}
       >
       </FlatList>
     </View>
@@ -66,7 +75,7 @@ const styles = StyleSheet.create({
     height:'auto'
   },
   rec_videos: {
-    paddingVertical: 40,
+    paddingVertical: 10,
     paddingHorizontal: 20,
     position: 'absolute',
     bottom: '0%',

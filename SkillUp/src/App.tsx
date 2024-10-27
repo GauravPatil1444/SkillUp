@@ -21,7 +21,7 @@ export type TabParamList = {
   Authentication: undefined|any;
   CreateAccount: undefined|any;
   VideoList: {
-    metadata: any[] | string[]
+    metadata: any[]|undefined;
   };
   Settings: undefined;
   Courses: {
