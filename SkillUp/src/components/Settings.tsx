@@ -99,7 +99,7 @@ const Settings = () => {
             <Image style={styles.btnImg} source={require('../assets/expand.png')} />
           </TouchableOpacity>
         </View>
-        {history.length != 0 ? <FlatList horizontal={true} contentContainerStyle={{ alignItems: 'center', gap: 15 }} style={[styles.videolist]}
+        {history.length != 0 ? <FlatList horizontal={true} contentContainerStyle={{ alignItems: 'center', gap: 15, paddingHorizontal:8 }} style={[styles.videolist]}
           data={history}
           initialNumToRender={2}
           maxToRenderPerBatch={2}
@@ -137,7 +137,7 @@ const Settings = () => {
             <Image style={styles.btnImg} source={require('../assets/expand.png')} />
           </TouchableOpacity>
         </View>
-        {saved.length != 0  ? <FlatList horizontal={true} contentContainerStyle={{ alignItems: 'center', gap: 15 }} style={[styles.videolist]}
+        {saved.length != 0  ? <FlatList horizontal={true} contentContainerStyle={{ alignItems: 'center', gap: 15, paddingHorizontal:8 }} style={[styles.videolist]}
           data={saved}
           initialNumToRender={4}
           maxToRenderPerBatch={4}
@@ -163,15 +163,15 @@ const Settings = () => {
           <View style={styles.historyTitle}>
             <Text style={styles.titletxt}>My courses</Text>
           </View>
-          {/* <TouchableOpacity
+          <TouchableOpacity
             style={styles.headerbtns}
-          
+            onPress={()=>{navigation.navigate('Courses')}}
           >
             <Text style={{ fontFamily: 'Inter_24pt-Regular', fontSize: 16, color: 'rgb(25,42,86)' }}>View all</Text>
             <Image style={styles.btnImg} source={require('../assets/expand.png')} />
-          </TouchableOpacity> */}
+          </TouchableOpacity>
         </View>
-        {courses.length != 0 ? <FlatList horizontal={true} contentContainerStyle={{ alignItems: 'center', gap: 15 }} style={[styles.videolist]}
+        {courses.length != 0 ? <FlatList horizontal={true} contentContainerStyle={{ alignItems: 'center', gap: 15 }} style={[styles.videolist,{paddingHorizontal:10}]}
           data={courses}
           initialNumToRender={4}
           maxToRenderPerBatch={4}
@@ -180,7 +180,7 @@ const Settings = () => {
             item!==null?(<TouchableOpacity key={item.playlistId} style={styles.coursecontainer} onPress={() => { navigation.navigate('Courses', item); }}>
               <View style={styles.coursecontainer}>
                 {/* <Text>{item.thumbnails}</Text> */}
-                <Image style={{ width: '100%', height: '100%' }} source={{ uri: item[4] }} resizeMode='contain'></Image>  
+                <Image style={{ width: '100%', height: '100%' }} source={{ uri: item.thumbnails }} resizeMode='contain'></Image>  
               </View>
             </TouchableOpacity>):null
           }
@@ -213,9 +213,9 @@ const styles = StyleSheet.create({
     // backgroundColor: 'rgba(165, 190, 252, 0a.197)',
   },
   videolist: {
-    width: '100%',
+    width: '98%',
     // height:180,
-    paddingHorizontal: 10,
+    // paddingHorizontal: 10,
     // backgroundColor:'pink'
   },
   btnImg: {

@@ -4,6 +4,9 @@ import YoutubeIframe from 'react-native-youtube-iframe'
 import { useFocusEffect } from '@react-navigation/native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { StackParamList } from '../App'
+import { collection, updateDoc, doc, getDocs } from 'firebase/firestore'
+import { db } from '../../firebaseConfig'
+import { firebase_auth } from '../../firebaseConfig'
 // import { TabParamList } from '../App'
 
 type StackVideoProps = NativeStackScreenProps<StackParamList, 'VideoPreview'>
@@ -18,7 +21,7 @@ const VideoPreview = ({ route }: StackVideoProps) => {
   const RNFS = require('react-native-fs');
 
   const { item } = route.params;
-  const [save, setsave] = useState(false)
+  // const [save, setsave] = useState(false)
   const [quizdata, setquizdata] = useState<quizcontent[]>([])
   const [loader, setloader] = useState(false)
   const [saveopts, setsaveopts] = useState<any[][]>([])
@@ -29,55 +32,44 @@ const VideoPreview = ({ route }: StackVideoProps) => {
   const [visited, setvisited] = useState<number[]>([])
   const [pressCount, setpressCount] = useState(1)
   const [quizView, setquizView] = useState(false)
+  const [update, setupdate] = useState(false)
 
   const writedata = async (currentID:string)=>{
-    let flag = true;
     const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
     const file = await RNFS.readFile(path, 'utf8');
     let user_preferences = await JSON.parse(file);
     await user_preferences["history"].map((i:any,index:number)=>{
-      console.log(index,i.videoID,currentID);
+      // console.log(index,i.videoID,currentID);
       if(i.videoID==item.videoID){
-        flag = false;
+        user_preferences["history"].splice(index,1);
       }
     })
-    if(flag){
-      console.log(1,item.videoID);
-      user_preferences["history"].push(item);
-      await RNFS.writeFile(path, JSON.stringify(user_preferences), 'utf8')
-    }
-    else{
-      console.log(2);
-    }
-
-  }
-
-  const checkSaved = async ()=>{
-    let flag = true;
-    const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
-    const file = await RNFS.readFile(path, 'utf8');
-    let user_preferences = await JSON.parse(file);
-    console.log(user_preferences);
-    await user_preferences["saved"].map((i:any,index:number)=>{
-      console.log(index,i.videoID);
-      if(i.videoID==item.videoID){
-        flag = false;
-      }
-    })
-    if(!flag){
-      setsave(true);
-    }
+    user_preferences["history"].splice(0,0,item);
+    await RNFS.writeFile(path, JSON.stringify(user_preferences), 'utf8')
+    setupdate(!update);
   }
 
   const savedata = async ()=>{
-    if(!save){
+    let saved = false;
+    const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
+    const file = await RNFS.readFile(path, 'utf8');
+    let user_preferences = await JSON.parse(file);
+    // console.log(user_preferences);
+    await user_preferences["saved"].map((i:any,index:number)=>{
+      // console.log(index,i.videoID);
+      if(i.videoID===item.videoID){
+        saved = true;
+      }
+    })
+    if(!saved){
       console.log(1,item.videoID);
       const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
       const file = await RNFS.readFile(path, 'utf8');
       let user_preferences = await JSON.parse(file);
-      user_preferences["saved"].push(item);
+      user_preferences["saved"].splice(0,0,item);
       await RNFS.writeFile(path, JSON.stringify(user_preferences), 'utf8')
-      setsave(true);
+      setupdate(!update);
+      Alert.alert("Video saved !");
     }
     else{
       if(pressCount==2){
@@ -93,10 +85,10 @@ const VideoPreview = ({ route }: StackVideoProps) => {
         user_preferences["saved"].splice(index, 1); 
         setpressCount(1);
         await RNFS.writeFile(path, JSON.stringify(user_preferences), 'utf8')
-        setsave(false);
+        Alert.alert("Video removed !");
       }
       else{ 
-        Alert.alert("Already saved !, click again to delete");
+        Alert.alert("Already saved !, click again to remove");
         setpressCount(2);
       }
     }
@@ -147,11 +139,30 @@ const VideoPreview = ({ route }: StackVideoProps) => {
     setselected(optindex)
   }
 
+  const updateData = async ()=>{
+    const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
+    const file = await RNFS.readFile(path, 'utf8');
+    console.log(file);
+    console.log(firebase_auth.currentUser?.uid);
+    const docRef = collection(db, "users",`${firebase_auth.currentUser?.uid}/UserPreferences`);
+    const docSnap = await getDocs(docRef);
+    const docref = doc(db, "users", `${firebase_auth.currentUser?.uid}`, "UserPreferences", docSnap.docs[0].id);
+    await updateDoc(docref,JSON.parse(file));
+    console.log("Document updated successful !", docSnap.docs[0].id);
+  }
+
   useEffect(() => {
-    let currentID = route.params.item.videoID;
-    writedata(currentID);
-    checkSaved();
+    const startup = async ()=>{
+      let currentID = await route.params.item.videoID;
+      await writedata(currentID)
+    }
+    startup();
   }, [route.params])
+
+
+  useEffect(()=> {
+    updateData();
+  }, [update])
 
   useFocusEffect(
     useCallback(() => {
@@ -172,7 +183,7 @@ const VideoPreview = ({ route }: StackVideoProps) => {
       </View>
       {quizdata.length == 0&&<View style={styles.btnspace}>
         <TouchableOpacity style={styles.btns} onPress={() => { savedata() }} >
-          <Text style={styles.btntitle}>{save ? 'Saved' : 'Save video'}</Text>
+          <Text style={styles.btntitle}>Save</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.btns} onPress={getquiz}>
           <Text style={styles.btntitle}>Generate quiz</Text>

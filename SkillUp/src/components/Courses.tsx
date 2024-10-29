@@ -5,6 +5,9 @@ import YoutubeIframe from 'react-native-youtube-iframe';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { TabParamList } from '../App'
+import { collection, updateDoc, doc, getDocs } from 'firebase/firestore'
+import { db } from '../../firebaseConfig'
+import { firebase_auth } from '../../firebaseConfig'
 
 type TabProps = NativeStackScreenProps<TabParamList, 'Courses'>
 
@@ -34,6 +37,7 @@ const Courses = ({route}:TabProps) => {
   const [courseMetadata, setcourseMetadata] = useState<string[]>([])
   const [Enrolltxt, setEnrolltxt] = useState('Enroll now !')
   const [pressCount, setpressCount] = useState(1)
+  const [update, setupdate] = useState(false)
 
   const RNFS = require('react-native-fs'); 
 
@@ -58,12 +62,15 @@ const Courses = ({route}:TabProps) => {
     opencourse(item);
   }, [route.params])
 
+  useEffect(()=> {
+    updateData();
+  }, [update])
 
   const search = async () => {
     setloader(true);
     setmetadata([])
     try {
-      const searchresult = await fetch('https://27b6-2409-40c2-600e-ec5e-f08e-d1c0-df2e-dcf4.ngrok-free.app/fetchcourses',
+      const searchresult = await fetch('https://80a7-2409-40c2-6059-bcce-d975-fbe3-6736-a0c2.ngrok-free.app/fetchcourses',
         {
           method: 'post',
           headers: {
@@ -108,7 +115,7 @@ const Courses = ({route}:TabProps) => {
     setcourseMetadata(item);
     setloader(true);
 
-    const fetchvideos = await fetch('https://27b6-2409-40c2-600e-ec5e-f08e-d1c0-df2e-dcf4.ngrok-free.app/fetchcoursevideos',
+    const fetchvideos = await fetch('https://80a7-2409-40c2-6059-bcce-d975-fbe3-6736-a0c2.ngrok-free.app/fetchcoursevideos',
       {
         method: 'post',
         headers: {
@@ -134,10 +141,10 @@ const Courses = ({route}:TabProps) => {
     const file = await RNFS.readFile(path, 'utf8');
     let user_preferences = await JSON.parse(file);
     console.log(user_preferences);
-    await user_preferences["courses"].map((i:any)=>{
-      console.log(i[0],item);
+    await user_preferences["courses"].map((i:coursemetadata)=>{
+      console.log(i.playlistId,item);
       
-      if(i[0]==item){
+      if(i.playlistId==item){
         flag = false;
       }
     })
@@ -152,11 +159,13 @@ const Courses = ({route}:TabProps) => {
   const Enroll = async(item:string[])=>{
     if(Enrolltxt!="Enrolled"){
       const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
+      let setitem = {"playlistId" : item[0], "channelTitle" : item[1], "description" : item[2], "title" : item[3], "thumbnails" : item[4]}
       const file = await RNFS.readFile(path, 'utf8');
       let user_preferences = await JSON.parse(file);
-      user_preferences["courses"].push(item);
+      user_preferences["courses"].splice(0,0,setitem);
       await RNFS.writeFile(path, JSON.stringify(user_preferences), 'utf8')
       setEnrolltxt('Enrolled')
+      setupdate(!update);
     }
     else{
       if(pressCount==2){
@@ -166,8 +175,8 @@ const Courses = ({route}:TabProps) => {
         const file = await RNFS.readFile(path, 'utf8');
         let user_preferences = await JSON.parse(file);
         // console.log(user_preferences['courses']);
-        await user_preferences["courses"].map((course:string[],i:number)=>{          
-          if(course[0]===item[0]){
+        await user_preferences["courses"].map((course:coursemetadata,i:number)=>{          
+          if(course.playlistId===item[0]){
             index = i;
           }
         })
@@ -177,6 +186,7 @@ const Courses = ({route}:TabProps) => {
         console.log("Deleted",index);
         await RNFS.writeFile(path, JSON.stringify(user_preferences), 'utf8')
         setEnrolltxt('Enroll now !');
+        setupdate(!update);
         navigation.navigate('Settings');
       }
       else{
@@ -185,6 +195,18 @@ const Courses = ({route}:TabProps) => {
       }
     }
 
+  }
+
+  const updateData = async ()=>{
+    const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
+    const file = await RNFS.readFile(path, 'utf8');
+    console.log(file);
+    console.log(firebase_auth.currentUser?.uid);
+    const docRef = collection(db, "users",`${firebase_auth.currentUser?.uid}/UserPreferences`);
+    const docSnap = await getDocs(docRef);
+    const docref = doc(db, "users", `${firebase_auth.currentUser?.uid}`, "UserPreferences", docSnap.docs[0].id);
+    await updateDoc(docref,JSON.parse(file));
+    console.log("Document updated successful !", docSnap.docs[0].id);
   }
 
   return (

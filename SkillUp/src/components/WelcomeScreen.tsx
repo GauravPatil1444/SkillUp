@@ -66,30 +66,31 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
     }
   }
 
-  const search = async () => {
+  const search = async (query:string) => {
     setmetadata([]);
     setloader(true);
     // setheadertitle('Search results')
     try {
-      const searchresult = await fetch('https://27b6-2409-40c2-600e-ec5e-f08e-d1c0-df2e-dcf4.ngrok-free.app/customsearch',
+      const searchresult = await fetch('https://e4c5-2409-40c2-600e-ec5e-16d-4f32-1805-b05b.ngrok-free.app/customsearch',
         {
           method: 'post',
           headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ "q": searchinp })
+          body: JSON.stringify({ "q": query==='N'?searchinp:query })
         }
       )
       let result = await searchresult.json()
       if (result['error']) {
         Alert.alert(result.error)
       }
-      
+      let data = []
       for (let i = 0; i < result.length; i++) {
         result[i]['videoID'] = result[i]['videoID'].split('=')[1];
-        setmetadata(prevMetadata => [...prevMetadata, result[i]]);
+        data.push(result[i]);
       }
+      setmetadata(data);
       // await new Promise(r => setTimeout(r, 1000));
       setloader(false)
     }
@@ -100,8 +101,8 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
   }
 
   const handleTopic = (item: string) => {
+    setmetadata([]);
     setloader(true);
-    setsearchinp(item);
     // setmetadata([]);
     if (userData["Topics"][item].length != 0) {
       setloader(false);
@@ -109,7 +110,7 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
     }
     else {
       // console.log("searched", searchinp);
-      search();
+      search(item);
     }
   }
 
@@ -137,9 +138,9 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
             onFocus={() => { setinpwidth(2) }}
             value={searchinp}
             onChangeText={setsearchinp}
-            onSubmitEditing={search}
+            onSubmitEditing={()=>{search('N')}}
           />
-          <TouchableOpacity style={{justifyContent:'center'}} onPress={()=>{search()}}>
+          <TouchableOpacity style={{justifyContent:'center'}} onPress={()=>{search('N')}}>
             <Image style={styles.searchImg} source={require('../assets/search.png')}/>
           </TouchableOpacity>
         </View>
