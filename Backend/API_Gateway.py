@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI,Request
 from recommender import recommender
 from content_provider import fetchcourses,customsearch, fetchcoursevideos
 from transcript import transcript
@@ -45,10 +45,13 @@ async def root():
     return "Welcome to skillup.AI! this is API_Gateway and services are running successfully."
 
 
+
 @app.post("/recommender")
-async def sendrecommendation():
-    id = 'BGTx91t8q50'
-    return recommender(id)
+async def sendrecommendation(request: Request):
+    data = await request.json()
+    ID = data.get("videoID")
+    metadata = data.get("data")
+    return recommender(ID, metadata)
 
 
 @app.post("/transcript")

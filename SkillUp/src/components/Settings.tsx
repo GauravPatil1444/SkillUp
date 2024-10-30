@@ -24,6 +24,12 @@ const Settings = () => {
     const RNFS = require('react-native-fs');
     const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
     RNFS.unlink(path)
+    const path1 = RNFS.DocumentDirectoryPath + '/metadata.txt';
+    RNFS.unlink(path1)
+    const path2 = RNFS.DocumentDirectoryPath + '/topics.txt';
+    RNFS.unlink(path2)
+    // const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
+    // RNFS.unlink(path)
     firebase_auth.signOut();
     navigation.navigate('Authentication');
   }

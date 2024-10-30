@@ -38,6 +38,7 @@ const Courses = ({route}:TabProps) => {
   const [Enrolltxt, setEnrolltxt] = useState('Enroll now !')
   const [pressCount, setpressCount] = useState(1)
   const [update, setupdate] = useState(false)
+  const [mycoursesview, setmycoursesview] = useState(false)
 
   const RNFS = require('react-native-fs'); 
 
@@ -51,7 +52,7 @@ const Courses = ({route}:TabProps) => {
         StatusBar.setBackgroundColor('#FBFCF8');
         StatusBar.setBarStyle('dark-content');
       }
-      
+      mycourses();
     }, [,viewcourse])
   );
 
@@ -196,6 +197,42 @@ const Courses = ({route}:TabProps) => {
     }
 
   }
+
+  const mycourses = async () => {
+    setmetadata([]);
+    setloader(true);
+    const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
+    const file = await RNFS.readFile(path, 'utf8');
+    let user_preferences = await JSON.parse(file);
+    if (user_preferences['courses'].length > 0) {
+      await user_preferences['courses'].map((item: coursemetadata) => {
+        setmetadata(prevMetadata => [...prevMetadata, item]);
+      })
+      console.log(user_preferences['courses']);
+      setloader(false);
+      setmycoursesview(true);
+    }
+    else {
+      try {
+        const docRef = collection(db, "users", `${firebase_auth.currentUser?.uid}/UserPreferences`);
+        const docSnap = await getDocs(docRef);
+        if (docSnap.docs[2].data().length > 0) {
+          const data = await JSON.parse(JSON.stringify(docSnap.docs[2].data()));
+          setmetadata(data);
+          const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
+          await RNFS.writeFile(path, data, 'utf8')
+          setloader(false);
+          setmycoursesview(true);
+          setupdate(!update);
+        }
+      }
+      catch {
+        console.log("Can't retrive documents");
+      }
+    }
+  }
+
+
 
   const updateData = async ()=>{
     const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';

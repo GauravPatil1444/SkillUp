@@ -7,7 +7,7 @@ import { useFocusEffect } from '@react-navigation/native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { StackParamList, TabParamList } from '../App'
 import { firebase_auth } from '../../firebaseConfig'
-import { collection, getDocs } from 'firebase/firestore'
+import { collection, getDocs, addDoc, updateDoc, doc } from 'firebase/firestore'
 import { db } from '../../firebaseConfig'
 
 type TabProps = NativeStackScreenProps<TabParamList, 'StackNavigation'>
@@ -30,6 +30,7 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
   }, [])
   useEffect(() => {
     fetchdata();
+    Recommendation();
   }, [])
 
 
@@ -38,47 +39,70 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
   const [metadata, setmetadata] = useState<videometadata[]>([])
   const [loader, setloader] = useState(true)
   const [userData, setuserData] = useState<any>([])
-  const [topics, settopics] = useState<string[]>([])
+  const [topics, settopics] = useState([])
   const [newUser, setnewUser] = useState(false)
+  const [metadataAvail, setmetadataAvail] = useState(false);
+  const RNFS = require('react-native-fs');
 
   // const topics = ['UmnCZ7-9yDY', 'GwIo3gDZCVQ', 'A74TOX803D0', 'xk4_1vDrzzo', 'ntLJmHOJ0ME', 'Pj0neYUp9Tc', 'dz458ZkBMak', 'eIrMbAQSU34', 'gJ9DYC-jswo', 't8pPdKYpowI']
   const Logo = require('../assets/Logo.png')
 
   const fetchdata = async () => {
     try{
+      console.log("staring 1");
+      
       const RNFS = require('react-native-fs');
       const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
       const file = await RNFS.readFile(path, 'utf8');
       const user_preferences = JSON.parse(file);
+
+      const path1 = RNFS.DocumentDirectoryPath + '/topics.txt';
+      const file1 = await RNFS.readFile(path1, 'utf8');
+      const topics = JSON.parse(file1);
+
       setuserData(user_preferences);
       console.log(user_preferences);
-      settopics(Object.keys(user_preferences["Topics"]));
+      console.log(topics);
+      settopics(topics["topics"]);
     }
     catch{
+      console.log("staring 2");
       const RNFS = require('react-native-fs');
       firebase_auth.onAuthStateChanged( async (user)=>{
         const docRef = collection(db, "users",`${user?.uid}/UserPreferences`);
         const docSnap = await getDocs(docRef);
+
+        const docRef1 = collection(db, "users",`${user?.uid}/topics`);
+        const docSnap1 = await getDocs(docRef1);
+
         setuserData(JSON.parse(JSON.stringify(docSnap.docs[0].data())));
         const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
-        RNFS.writeFile(path, JSON.stringify(docSnap.docs[0].data()), 'utf8')
+        await RNFS.writeFile(path, JSON.stringify(docSnap.docs[0].data()), 'utf8')
+
+        console.log(JSON.parse(JSON.stringify(docSnap1.docs[0].data())));
+        
+        // settopics();
+        const path1 = RNFS.DocumentDirectoryPath + '/topics.txt';
+        await RNFS.writeFile(path1, JSON.stringify(docSnap1.docs[0].data()), 'utf8')
       })
     }
   }
 
   const search = async (query:string) => {
+    setmetadataAvail(true);
     setmetadata([]);
     setloader(true);
+    const searchQuery = query==='N'?searchinp:query;
     // setheadertitle('Search results')
     try {
-      const searchresult = await fetch('https://e4c5-2409-40c2-600e-ec5e-16d-4f32-1805-b05b.ngrok-free.app/customsearch',
+      const searchresult = await fetch('https://b128-2409-40c2-6005-388d-c96-aab7-b203-826c.ngrok-free.app/customsearch',
         {
           method: 'post',
           headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ "q": query==='N'?searchinp:query })
+          body: JSON.stringify({ "q": searchQuery })
         }
       )
       let result = await searchresult.json()
@@ -86,11 +110,17 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
         Alert.alert(result.error)
       }
       let data = []
+      let results = []
       for (let i = 0; i < result.length; i++) {
         result[i]['videoID'] = result[i]['videoID'].split('=')[1];
-        data.push(result[i]);
+        if(result[i]['videoID']!==undefined){  
+          data.push(result[i]);
+          results.push(result[i]['videoID'])
+        }
       }
       setmetadata(data);
+      await RecommendationTracker(searchQuery,results);
+      await writeFiles(data,searchQuery);
       // await new Promise(r => setTimeout(r, 1000));
       setloader(false)
     }
@@ -100,17 +130,70 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
     }
   }
 
-  const handleTopic = (item: string) => {
+  const handleTopic = async (item: string) => {
     setmetadata([]);
     setloader(true);
-    // setmetadata([]);
-    if (userData["Topics"][item].length != 0) {
-      setloader(false);
-      setmetadata(prevMetadata => [...prevMetadata, userData["Topics"][item]]);
+    search(item);
+  }
+
+  const RecommendationTracker = async (query:string,results:string[])=>{
+    const file = {
+      "query" : query,
+      "count" : 0,
+      "visited" : 0,
+      "results" : results
     }
-    else {
-      // console.log("searched", searchinp);
-      search(item);
+    const path = RNFS.DocumentDirectoryPath + '/RecommendationTracker.txt';
+    await RNFS.writeFile(path, JSON.stringify(file), 'utf8')
+    console.log("Tracker file written"); 
+  }
+
+  const writeFiles = async (currentFile:videometadata[],searchQuery:string)=>{
+    const path1 = RNFS.DocumentDirectoryPath + '/metadata.txt';
+    const path2 = RNFS.DocumentDirectoryPath + '/topics.txt';
+    let metadata:any;
+    try{
+      let result = await RNFS.readFile(path1, 'utf8')
+      metadata = await JSON.parse(result);
+      console.log(metadata);
+    }
+    catch{
+      metadata = {"metadata" : []};
+    }
+    let topics = await RNFS.readFile(path2, 'utf8');
+    topics = await JSON.parse(topics);
+    if(!topics["topics"].includes(searchQuery)){
+      metadata["metadata"] = await metadata["metadata"].concat(currentFile);
+    }
+    if(topics["topics"].includes(searchQuery)){
+      await topics["topics"].map((item:string,index:number)=>{
+        if(item==searchQuery){
+          topics["topics"].splice(index,1);
+        }
+      })
+    }
+    await topics["topics"].splice(0,0,searchQuery);
+  
+    await RNFS.writeFile(path1, JSON.stringify(metadata), 'utf8');
+    await RNFS.writeFile(path2, JSON.stringify(topics), 'utf8');
+    const docRef = collection(db, "users",`${firebase_auth.currentUser?.uid}/topics`);
+    const docSnap = await getDocs(docRef);
+    const docref = doc(db, "users", `${firebase_auth.currentUser?.uid}`, "topics", docSnap.docs[0].id);
+    await updateDoc(docref,topics);
+    settopics(topics["topics"]);
+    // const docRef1 = await addDoc(collection(db, "users",`${firebase_auth.currentUser?.uid}/metadata`), metadata);
+    // console.log("Document written with ID: ", docRef1.id);
+  }
+
+  const Recommendation = async ()=>{
+    try{
+      const path = RNFS.DocumentDirectoryPath + '/recommended.txt';
+      let result = await RNFS.readFile(path, 'utf8');
+      let recommended = JSON.parse(result);
+      console.log(recommended);
+    }
+    catch{
+      setloader(false);
     }
   }
 
@@ -173,8 +256,12 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
           <Text style={{ fontFamily: 'Inter_24pt-Regular', fontSize: 16, color: 'rgb(25,42,86)' }}>Expand</Text>
           <Image style={styles.btnImg} source={require('../assets/expand.png')}/>
         </TouchableOpacity>}
+        
+        {!metadataAvail&&userData.length!=0&&<View style={{alignItems:'center'}}>
+          <Text style={styles.rec_txt}>Hey {userData["UserDetails"]["name"]} 👋, Try watching various kind of videos to get recommendations</Text>
+        </View>}
 
-        {!loader && <FlatList contentContainerStyle={{ alignItems: 'center', gap: 15 }} style={[styles.list_videos]}
+        {!loader&&metadataAvail && <FlatList contentContainerStyle={{ alignItems: 'center', gap: 15 }} style={[styles.list_videos]}
           data={metadata}
           initialNumToRender={3}
           maxToRenderPerBatch={3}
@@ -196,6 +283,12 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
   )
 }
 const styles = StyleSheet.create({
+  rec_txt:{
+    color: 'rgb(25,42,86)',
+    fontFamily: 'Inter_24pt-Regular',
+    fontSize: 25,
+    fontWeight: 'bold'
+  },
   searchImg:{
     position:'absolute',
     right: 10,

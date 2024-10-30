@@ -6,10 +6,10 @@ import string
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import linear_kernel
 
-def recommender(id):
+def recommender(id,data):
 
-    df = pd.json_normalize(json.load(open('data.json')))
-    data = pd.DataFrame(df[['videoID','title','channelID']])    
+    df = pd.json_normalize(json.load(data))
+    data = pd.DataFrame(df[['videoID','title']])    
     nlp = spacy.load(r'C:\Users\patil\AppData\Roaming\Python\Python311\site-packages\en_core_web_sm\en_core_web_sm-3.7.1')
 
     def preprocess(text):
@@ -22,10 +22,9 @@ def recommender(id):
         return ' '.join(result)        
 
     data['preprocess_title'] = data.title.apply(preprocess)
-    data['merged'] = data['preprocess_title'].astype(str) + ' ' + data['channelID'].astype(str)
     
     tfidf = TfidfVectorizer()
-    vec_matrix = tfidf.fit_transform(data.merged) 
+    vec_matrix = tfidf.fit_transform(data.preprocess_title) 
     data['vec_data'] = list(vec_matrix.toarray())
     
     X = np.array(data['vec_data'].tolist())

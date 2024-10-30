@@ -40,7 +40,7 @@ const VideoPreview = ({ route }: StackVideoProps) => {
     let user_preferences = await JSON.parse(file);
     await user_preferences["history"].map((i:any,index:number)=>{
       // console.log(index,i.videoID,currentID);
-      if(i.videoID==item.videoID){
+      if(i.videoID==currentID){
         user_preferences["history"].splice(index,1);
       }
     })
@@ -142,7 +142,7 @@ const VideoPreview = ({ route }: StackVideoProps) => {
   const updateData = async ()=>{
     const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
     const file = await RNFS.readFile(path, 'utf8');
-    console.log(file);
+    // console.log(file);
     console.log(firebase_auth.currentUser?.uid);
     const docRef = collection(db, "users",`${firebase_auth.currentUser?.uid}/UserPreferences`);
     const docSnap = await getDocs(docRef);
@@ -151,10 +151,54 @@ const VideoPreview = ({ route }: StackVideoProps) => {
     console.log("Document updated successful !", docSnap.docs[0].id);
   }
 
+  const RecommendationTracker = async (currentID: string) => {
+    const path = RNFS.DocumentDirectoryPath + '/RecommendationTracker.txt';
+    const file = await RNFS.readFile(path, 'utf8');
+    let fileData = JSON.parse(file);
+    console.log(fileData);
+    
+    if (fileData["results"].includes(currentID)) {
+      fileData["count"] += 1;
+      await RNFS.writeFile(path, JSON.stringify(fileData), 'utf8');
+      console.log("count updated", fileData["count"]);
+  
+      if (fileData["count"] == 3) {
+        await RNFS.writeFile(path, JSON.stringify(fileData), 'utf8');
+        const path1 = RNFS.DocumentDirectoryPath + '/metadata.txt';
+        const result = await RNFS.readFile(path1, 'utf8');
+        const metadata = JSON.parse(result);
+        // EngineCall(currentID,metadata);
+        // console.log(currentID,metadata);
+      }
+    } 
+    else{
+      console.log("ID doesn't match");
+    }
+  };
+
+  const EngineCall = async (currentID:string,metadata:any)=>{
+    console.log(200);
+    const response = await fetch('https://b128-2409-40c2-6005-388d-c96-aab7-b203-826c.ngrok-free.app/recommender',
+      {
+        method: 'POST',
+        headers:{
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body : JSON.stringify({"videoID" : currentID,"data":metadata})
+      }
+    )
+    const data = await response.json()
+    console.log(data['result']);
+    
+  }
+  
+
   useEffect(() => {
     const startup = async ()=>{
       let currentID = await route.params.item.videoID;
-      await writedata(currentID)
+      await writedata(currentID);
+      RecommendationTracker(currentID);
     }
     startup();
   }, [route.params])

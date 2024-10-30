@@ -16,7 +16,7 @@ URL3 = os.getenv("URL3")
 def customsearch(query):
     metadata = []
     start = 1
-    for i in range(5):
+    for i in range(1):
         params = {
             'q' : query,
             'key' : KEY,

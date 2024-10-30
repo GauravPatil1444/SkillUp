@@ -41,21 +41,23 @@ const Login = ({ navigation }: TabProps) => {
                         "name" : username,
                         "email" : user_email
                     },
-                    "Topics" : {
-                        "Web development" : [],
-                        "Machine Learning" : [],
-                        "Python" : [],
-                        "Java" : []
-                    },
                     "history" : [],
                     "saved" : [],
                     "courses" : []
                 }
+                let topics = {
+                    "topics" : ["Web development","Machine Learning", "Python", "Java"]
+                }
+
                 const docRef1 = await addDoc(collection(db, "users",`${user_id}/UserPreferences`), user_preferences);
                 console.log("Document written with ID: ", docRef1.id);
-
                 const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
                 await RNFS.writeFile(path, JSON.stringify(user_preferences), 'utf8')
+
+                const docRef2 = await addDoc(collection(db, "users",`${user_id}/topics`), topics);
+                console.log("Document written with ID: ", docRef2.id);
+                const path1 = RNFS.DocumentDirectoryPath + '/topics.txt';
+                await RNFS.writeFile(path1, JSON.stringify(topics), 'utf8')
 
                 navigation.navigate('StackNavigation')
             }
@@ -75,9 +77,15 @@ const Login = ({ navigation }: TabProps) => {
             const user_id = response.user.uid;
             const docRef = collection(db, "users",`${user_id}/UserPreferences`);
             const docSnap = await getDocs(docRef);
+
+            const docRef1 = collection(db, "users",`${user_id}/topics`);
+            const docSnap1 = await getDocs(docRef1);
+
             // console.log(docSnap.docs[0].data());
             const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
             await RNFS.writeFile(path, JSON.stringify(docSnap.docs[0].data()), 'utf8')
+            const path1 = RNFS.DocumentDirectoryPath + '/topics.txt';
+            await RNFS.writeFile(path1, JSON.stringify(docSnap1.docs[0].data()), 'utf8')
             
             navigation.navigate('StackNavigation');
         }
