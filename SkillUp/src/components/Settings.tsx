@@ -1,9 +1,10 @@
-import { View, Text, StyleSheet, StatusBar, TouchableOpacity, ScrollView, Image, FlatList, Alert } from 'react-native'
+import { View, Text, StyleSheet, StatusBar, TouchableOpacity, ScrollView, Image, FlatList, Alert, Dimensions } from 'react-native'
 import React, { useCallback, useEffect, useState } from 'react'
 import { useFocusEffect } from '@react-navigation/native';
 import { firebase_auth } from '../../firebaseConfig'
 import YoutubeIframe from 'react-native-youtube-iframe'
 import { useNavigation } from '@react-navigation/native';
+import { signOut } from 'firebase/auth';
 
 const Settings = () => {
 
@@ -15,22 +16,23 @@ const Settings = () => {
   const [history, sethistory] = useState<any>({})
   const [saved, setsaved] = useState<any>({})
   const [courses, setcourses] = useState<any>({})
+  const [count, setcount] = useState(1)
   // const [metadata, setmetadata] = useState<videometadata[]>([])
 
   const metadata = ['UmnCZ7-9yDY', 'GwIo3gDZCVQ', 'A74TOX803D0', 'xk4_1vDrzzo', 'ntLJmHOJ0ME', 'Pj0neYUp9Tc', 'dz458ZkBMak', 'eIrMbAQSU34', 'gJ9DYC-jswo', 't8pPdKYpowI']
 
 
-  const handleSignout = () => {
+  const handleSignout = async () => {
     const RNFS = require('react-native-fs');
     const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
-    RNFS.unlink(path)
+    await RNFS.unlink(path)
     const path1 = RNFS.DocumentDirectoryPath + '/metadata.txt';
-    RNFS.unlink(path1)
+    await RNFS.unlink(path1)
     const path2 = RNFS.DocumentDirectoryPath + '/topics.txt';
-    RNFS.unlink(path2)
+    await RNFS.unlink(path2)
     // const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
     // RNFS.unlink(path)
-    firebase_auth.signOut();
+    await firebase_auth.signOut();
     navigation.navigate('Authentication');
   }
 
@@ -68,6 +70,17 @@ const Settings = () => {
 
   }
 
+  const signOutviaLogo = ()=>{
+    if(count==2){
+      setcount(1);
+      handleSignout();
+    }
+    else{
+      setcount(2);
+      Alert.alert("Press again to Sign out");
+    }
+  }
+
   useFocusEffect(
     useCallback(() => {
       StatusBar.setBackgroundColor('#FBFCF8');
@@ -83,9 +96,11 @@ const Settings = () => {
           <ScrollView horizontal={true} style={{ flexDirection: 'row' }}>
             {user.length != 0 && <Text style={styles.headertxt}>{user}</Text>}
           </ScrollView>
-          <View style={styles.profile}>
-            <Text style={styles.profiletxt}>{user[0]}</Text>
-          </View>
+          <TouchableOpacity onPress={()=>{signOutviaLogo()}}>
+            <View style={styles.profile} >
+              <Text style={styles.profiletxt}>{user[0]}</Text>
+            </View>
+          </TouchableOpacity>
         </View>
         <View>
           <Text style={styles.emailtxt}>{email}</Text>
@@ -270,6 +285,11 @@ const styles = StyleSheet.create({
   profiletxt: {
     color: '#FBFCF8',
     fontSize: 30,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    textAlign:'center',
+    textAlignVertical:'center'
   },
   headertxt: {
     color: 'rgb(25,42,86)',
@@ -289,6 +309,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
   },
   container: {
+    // height: Dimensions.get('window').height,
     flex: 1,
     backgroundColor: '#FBFCF8',
     width: '100%',

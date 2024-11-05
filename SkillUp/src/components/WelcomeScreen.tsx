@@ -79,9 +79,10 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
         const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
         await RNFS.writeFile(path, JSON.stringify(docSnap.docs[0].data()), 'utf8')
 
-        console.log(JSON.parse(JSON.stringify(docSnap1.docs[0].data())));
+        const topics =  await JSON.parse(JSON.stringify(docSnap1.docs[0].data()["topics"]))
+        console.log(JSON.parse(JSON.stringify(docSnap1.docs[0].data()["topics"])));
         
-        // settopics();
+        settopics(topics["topics"]);
         const path1 = RNFS.DocumentDirectoryPath + '/topics.txt';
         await RNFS.writeFile(path1, JSON.stringify(docSnap1.docs[0].data()), 'utf8')
       })
@@ -95,7 +96,7 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
     const searchQuery = query==='N'?searchinp:query;
     // setheadertitle('Search results')
     try {
-      const searchresult = await fetch('https://b128-2409-40c2-6005-388d-c96-aab7-b203-826c.ngrok-free.app/customsearch',
+      const searchresult = await fetch('https://af80-2409-40c2-3b-684a-e5b9-7235-4746-e48f.ngrok-free.app/customsearch',
         {
           method: 'post',
           headers: {
@@ -163,7 +164,12 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
     let topics = await RNFS.readFile(path2, 'utf8');
     topics = await JSON.parse(topics);
     if(!topics["topics"].includes(searchQuery)){
-      metadata["metadata"] = await metadata["metadata"].concat(currentFile);
+      if(metadata["metadata"].length>=150){
+        metadata["metadata"] = await metadata["metadata"].slice(0,120).concat(currentFile);
+      }
+      else{
+        metadata["metadata"] = await metadata["metadata"].concat(currentFile);
+      }
     }
     if(topics["topics"].includes(searchQuery)){
       await topics["topics"].map((item:string,index:number)=>{
@@ -188,9 +194,41 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
   const Recommendation = async ()=>{
     try{
       const path = RNFS.DocumentDirectoryPath + '/recommended.txt';
-      let result = await RNFS.readFile(path, 'utf8');
-      let recommended = JSON.parse(result);
-      console.log(recommended);
+      let recommended = await RNFS.readFile(path, 'utf8');
+      const path1 = RNFS.DocumentDirectoryPath + '/metadata.txt';
+      let metadata = await RNFS.readFile(path1, 'utf8');
+
+      recommended = await JSON.parse(recommended);
+      metadata = await JSON.parse(metadata);
+      
+      let shuffleArray = (arr:any)=> {
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+      }
+
+      recommended = await shuffleArray(recommended["result"]);
+      console.log("Unshuffled",metadata["metadata"]);
+      console.log("shuffled",shuffleArray(metadata["metadata"]));
+      console.log("recommended",recommended);
+      let shuffled = await shuffleArray(metadata["metadata"]);
+      console.log("Mixed",shuffled.length);
+      // let mixed:any = [];
+      let filteredshuffled = await shuffled.filter((item:any)=>{return item!==undefined&&!recommended.some((recItem:any) => JSON.stringify(recItem) === JSON.stringify(item))})
+      let filteredshuffled1 = await filteredshuffled.slice(0,25);
+
+      let mixed = await shuffleArray(recommended.concat(filteredshuffled1))
+      mixed = await mixed.concat(filteredshuffled.slice(25,40));
+      console.log("mixed",mixed.length);
+      
+      setmetadata(mixed);
+      setloader(false);
+      setmetadataAvail(true);
+      // const path2 = RNFS.DocumentDirectoryPath + '/recommended.txt';
+      // await RNFS.writeFile(path2,JSON.stringify({"result":shuffled}),'utf8');
+      // console.log("recommended file written");
     }
     catch{
       setloader(false);
@@ -217,6 +255,7 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
             returnKeyType='search'
             style={styles.input}
             placeholder='Search a Topic'
+            placeholderTextColor={'#FBFCF8'}
             onEndEditing={() => { setinpwidth(1) }}
             onFocus={() => { setinpwidth(2) }}
             value={searchinp}
@@ -249,7 +288,7 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
         {loader && <View style={{ flex: 1, alignItems: 'center', width: '100%', height: 'auto' }}>
           <Text style={{ color: 'red' }}>Loading....</Text>
         </View>}
-        {!loader && <TouchableOpacity
+        {!loader && metadataAvail &&<TouchableOpacity
           style={styles.expandbtn}
           onPress={() => { navigation.getParent<TabProps['navigation']>().navigate('VideoList', { metadata }) }}
         >

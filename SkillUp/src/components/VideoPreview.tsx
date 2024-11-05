@@ -98,7 +98,7 @@ const VideoPreview = ({ route }: StackVideoProps) => {
 
     setloader(true)
     try {
-      const response = await fetch('https://27b6-2409-40c2-600e-ec5e-f08e-d1c0-df2e-dcf4.ngrok-free.app/transcript',
+      const response = await fetch('https://cd8e-106-78-36-4.ngrok-free.app/transcript',
         {
           method: 'POST',
           headers:{
@@ -167,8 +167,15 @@ const VideoPreview = ({ route }: StackVideoProps) => {
         const path1 = RNFS.DocumentDirectoryPath + '/metadata.txt';
         const result = await RNFS.readFile(path1, 'utf8');
         const metadata = JSON.parse(result);
-        // EngineCall(currentID,metadata);
-        // console.log(currentID,metadata);
+        // console.log(metadata);
+        if(metadata["metadata"].length>=90){
+          const recommendations:any = await EngineCall(currentID,metadata["metadata"]);
+          const data = await JSON.parse(recommendations);
+          // console.log(data["result"]);
+          const path2 = RNFS.DocumentDirectoryPath + '/recommended.txt';
+          await RNFS.writeFile(path2,JSON.stringify({"result":data["result"]}),'utf8');
+          console.log("recommended file written");
+        }
       }
     } 
     else{
@@ -178,7 +185,7 @@ const VideoPreview = ({ route }: StackVideoProps) => {
 
   const EngineCall = async (currentID:string,metadata:any)=>{
     console.log(200);
-    const response = await fetch('https://b128-2409-40c2-6005-388d-c96-aab7-b203-826c.ngrok-free.app/recommender',
+    const response = await fetch('https://af80-2409-40c2-3b-684a-e5b9-7235-4746-e48f.ngrok-free.app/recommender',
       {
         method: 'POST',
         headers:{
@@ -189,8 +196,7 @@ const VideoPreview = ({ route }: StackVideoProps) => {
       }
     )
     const data = await response.json()
-    console.log(data['result']);
-    
+    return data;
   }
   
 

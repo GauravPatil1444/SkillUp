@@ -17,7 +17,7 @@ COOL_DOWN_LOCK = Lock()
 
 request_data_file = 'request_data.json'
 
-REQUEST_LIMIT = 18
+REQUEST_LIMIT = 30
 
 TIME_PERIOD = timedelta(days=1)
 
@@ -49,8 +49,8 @@ async def root():
 @app.post("/recommender")
 async def sendrecommendation(request: Request):
     data = await request.json()
-    ID = data.get("videoID")
-    metadata = data.get("data")
+    ID = data["videoID"]
+    metadata = data["data"]
     return recommender(ID, metadata)
 
 

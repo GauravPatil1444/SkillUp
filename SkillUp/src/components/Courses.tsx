@@ -71,7 +71,7 @@ const Courses = ({route}:TabProps) => {
     setloader(true);
     setmetadata([])
     try {
-      const searchresult = await fetch('https://80a7-2409-40c2-6059-bcce-d975-fbe3-6736-a0c2.ngrok-free.app/fetchcourses',
+      const searchresult = await fetch('https://cd8e-106-78-36-4.ngrok-free.app/fetchcourses',
         {
           method: 'post',
           headers: {
@@ -116,7 +116,7 @@ const Courses = ({route}:TabProps) => {
     setcourseMetadata(item);
     setloader(true);
 
-    const fetchvideos = await fetch('https://80a7-2409-40c2-6059-bcce-d975-fbe3-6736-a0c2.ngrok-free.app/fetchcoursevideos',
+    const fetchvideos = await fetch('https://cd8e-106-78-36-4.ngrok-free.app/fetchcoursevideos',
       {
         method: 'post',
         headers: {
@@ -217,7 +217,7 @@ const Courses = ({route}:TabProps) => {
         const docRef = collection(db, "users", `${firebase_auth.currentUser?.uid}/UserPreferences`);
         const docSnap = await getDocs(docRef);
         if (docSnap.docs[2].data().length > 0) {
-          const data = await JSON.parse(JSON.stringify(docSnap.docs[2].data()));
+          const data = await JSON.parse(JSON.stringify(docSnap.docs[1].data()));
           setmetadata(data);
           const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
           await RNFS.writeFile(path, data, 'utf8')
@@ -274,6 +274,9 @@ const Courses = ({route}:TabProps) => {
         <Text style={{ color: 'red' }}>Loading....</Text>
       </View>}
       {!loader && !viewcourse && <View style={styles.list_videos}>
+        {mycoursesview&&<View style={{alignItems:'center'}}>
+          <Text style={{color:'rgb(25,42,86)',fontFamily:'Inter_24pt-Regular',fontSize:25}}>My courses</Text>
+        </View>}
         <FlatList contentContainerStyle={{ alignItems: 'center' }} style={[styles.rec_videos]}
           data={metadata}
           initialNumToRender={3}

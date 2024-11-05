@@ -1,7 +1,7 @@
 fastapi
 uvicorn 
 pandas
-numpy 
+numpy
 spacy
 scikit-learn
 youtube-transcript-api 

@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, StatusBar, TextInput, KeyboardAvoidingView , Alert } from 'react-native'
+import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, StatusBar, TextInput, KeyboardAvoidingView, Alert } from 'react-native'
 import { useFocusEffect } from '@react-navigation/native'
 import React, { useCallback, useState } from 'react'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
@@ -22,63 +22,72 @@ const Login = ({ navigation }: TabProps) => {
     const [email, setemail] = useState('')
     const [password, setpassword] = useState('')
     const [confirmpassword, setconfirmpassword] = useState('')
+    const [nameValid, setnameValid] = useState(true)
+    const [passValid, setpassValid] = useState(true)
+    const [show1, setshow1] = useState(true);
+    const [show2, setshow2] = useState(true)
     const RNFS = require('react-native-fs');
 
-    const createAccount = async() => {
-        if(password==confirmpassword){
-            try{
-                const response = await createUserWithEmailAndPassword(firebase_auth, email, password)
-                const user_email = response.user.email;
-                const user_id = response.user.uid
-                // console.log(user);
-                const docRef = await addDoc(collection(db, "users",`${user_id}/UserDetails`), {
-                    name : username,
-                    email : user_email,
-                });
-                console.log("Document written with ID: ", docRef.id);
-                let user_preferences = {
-                    "UserDetails" : {
-                        "name" : username,
-                        "email" : user_email
-                    },
-                    "history" : [],
-                    "saved" : [],
-                    "courses" : []
+    const createAccount = async () => {
+        if (password == confirmpassword) {
+            if (password.length > 4) {
+                try {
+                    const response = await createUserWithEmailAndPassword(firebase_auth, email, password)
+                    const user_email = response.user.email;
+                    const user_id = response.user.uid
+                    // console.log(user);
+                    const docRef = await addDoc(collection(db, "users", `${user_id}/UserDetails`), {
+                        name: username,
+                        email: user_email,
+                    });
+                    console.log("Document written with ID: ", docRef.id);
+                    let user_preferences = {
+                        "UserDetails": {
+                            "name": username,
+                            "email": user_email
+                        },
+                        "history": [],
+                        "saved": [],
+                        "courses": []
+                    }
+                    let topics = {
+                        "topics": ["Web development", "Machine Learning", "Python", "Java"]
+                    }
+
+                    const docRef1 = await addDoc(collection(db, "users", `${user_id}/UserPreferences`), user_preferences);
+                    console.log("Document written with ID: ", docRef1.id);
+                    const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
+                    await RNFS.writeFile(path, JSON.stringify(user_preferences), 'utf8')
+
+                    const docRef2 = await addDoc(collection(db, "users", `${user_id}/topics`), topics);
+                    console.log("Document written with ID: ", docRef2.id);
+                    const path1 = RNFS.DocumentDirectoryPath + '/topics.txt';
+                    await RNFS.writeFile(path1, JSON.stringify(topics), 'utf8')
+
+                    navigation.navigate('StackNavigation')
                 }
-                let topics = {
-                    "topics" : ["Web development","Machine Learning", "Python", "Java"]
-                }
-
-                const docRef1 = await addDoc(collection(db, "users",`${user_id}/UserPreferences`), user_preferences);
-                console.log("Document written with ID: ", docRef1.id);
-                const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
-                await RNFS.writeFile(path, JSON.stringify(user_preferences), 'utf8')
-
-                const docRef2 = await addDoc(collection(db, "users",`${user_id}/topics`), topics);
-                console.log("Document written with ID: ", docRef2.id);
-                const path1 = RNFS.DocumentDirectoryPath + '/topics.txt';
-                await RNFS.writeFile(path1, JSON.stringify(topics), 'utf8')
-
-                navigation.navigate('StackNavigation')
+                catch (error: any) {
+                    const message = error.message;
+                    Alert.alert(message);
+                };
             }
-            catch(error:any){
-                const message = error.message;
-                Alert.alert(message);
-            };
+            else{
+                Alert.alert("Password length must be atleast 4");
+            }
         }
-        else{
+        else {
             Alert.alert("confirm password doesn't matched !");
         }
     }
-    const authenticate = async()=>{   
-        try{
-            const response  = await signInWithEmailAndPassword(firebase_auth,email,password);
+    const authenticate = async () => {
+        try {
+            const response = await signInWithEmailAndPassword(firebase_auth, email, password);
             // console.log(response);
             const user_id = response.user.uid;
-            const docRef = collection(db, "users",`${user_id}/UserPreferences`);
+            const docRef = collection(db, "users", `${user_id}/UserPreferences`);
             const docSnap = await getDocs(docRef);
 
-            const docRef1 = collection(db, "users",`${user_id}/topics`);
+            const docRef1 = collection(db, "users", `${user_id}/topics`);
             const docSnap1 = await getDocs(docRef1);
 
             // console.log(docSnap.docs[0].data());
@@ -86,13 +95,34 @@ const Login = ({ navigation }: TabProps) => {
             await RNFS.writeFile(path, JSON.stringify(docSnap.docs[0].data()), 'utf8')
             const path1 = RNFS.DocumentDirectoryPath + '/topics.txt';
             await RNFS.writeFile(path1, JSON.stringify(docSnap1.docs[0].data()), 'utf8')
-            
+
             navigation.navigate('StackNavigation');
         }
-        catch(e:any){
+        catch (e: any) {
             Alert.alert("Invalid email or password !");
         }
     }
+
+    const handleName = (text: string) => {
+        if (text.length > 20) {
+            Alert.alert("Only 20 charachters allowed");
+            setnameValid(false);
+        }
+        else {
+            setnameValid(true);
+        }
+    }
+
+    const handlePassword = (text: string) => {
+        if (text.length > 15) {
+            Alert.alert("Password length between 4 to 15 is allowed");
+            setpassValid(false);
+        }
+        else {
+            setpassValid(true);
+        }
+    }
+
 
     useFocusEffect(
         useCallback(() => {
@@ -103,9 +133,9 @@ const Login = ({ navigation }: TabProps) => {
 
     return (
         <KeyboardAvoidingView style={styles.container}>
-            <Image style={[styles.Logo,inp4width==1?{width: Dimensions.get('window').width / 2, height: Dimensions.get('window').width / 2}:{width: Dimensions.get('window').width / 4, height: Dimensions.get('window').width / 4}]} source={require('../assets/Logo_dark.png')} />
-            {loginmode?<Text style={styles.Logotxt}>Login</Text>:
-            <Text style={styles.Logotxt}>Create account</Text>}
+            <Image style={[styles.Logo, inp4width == 1 ? { width: Dimensions.get('window').width / 2, height: Dimensions.get('window').width / 2 } : { width: Dimensions.get('window').width / 4, height: Dimensions.get('window').width / 4 }]} source={require('../assets/Logo_dark.png')} />
+            {loginmode ? <Text style={styles.Logotxt}>Login</Text> :
+                <Text style={styles.Logotxt}>Create account</Text>}
             <View style={styles.btnspace}>
 
                 {!emailclick && <TouchableOpacity style={styles.btns} onPress={() => setemailclick(true)}>
@@ -114,7 +144,7 @@ const Login = ({ navigation }: TabProps) => {
                 </TouchableOpacity>}
 
                 {emailclick && <>
-                    {!loginmode&&<TextInput
+                    {!loginmode && <TextInput
                         placeholder='Enter your name'
                         placeholderTextColor={'rgb(25,42,86)'}
                         cursorColor={'rgb(25,42,86)'}
@@ -122,7 +152,7 @@ const Login = ({ navigation }: TabProps) => {
                         onFocus={() => { setinp1width(2) }}
                         onEndEditing={() => { setinp1width(1) }}
                         value={username}
-                        onChangeText={(text) => { setusername(text) }}
+                        onChangeText={(text) => { setusername(text), handleName(text) }}
                     />}
                     <TextInput
                         placeholder='Enter email'
@@ -135,32 +165,42 @@ const Login = ({ navigation }: TabProps) => {
                         value={email}
                         onChangeText={(text) => { setemail(text) }}
                     />
-                    <TextInput
-                        placeholder='Enter password'
-                        placeholderTextColor={'rgb(25,42,86)'}
-                        cursorColor={'rgb(25,42,86)'}
-                        secureTextEntry={true}
-                        style={[styles.input, { borderWidth: inp3width }]}
-                        onFocus={() => { setinp3width(2) }}
-                        onEndEditing={() => { setinp3width(1) }}
-                        value={password}
-                        onChangeText={(text) => { setpassword(text) }}
-                    />
-                    {!loginmode&&<TextInput
-                        placeholder='Confirm password'
-                        placeholderTextColor={'rgb(25,42,86)'}
-                        cursorColor={'rgb(25,42,86)'}
-                        secureTextEntry={true}
-                        style={[styles.input, { borderWidth: inp4width }]}
-                        onFocus={() => { setinp4width(2) }}
-                        onEndEditing={() => { setinp4width(1) }}
-                        value={confirmpassword}
-                        onChangeText={(text) => { setconfirmpassword(text) }}
-                    />}
+                    <View style={{flexDirection:'row',gap:10}}>
+                        <TextInput
+                            placeholder='Enter password'
+                            placeholderTextColor={'rgb(25,42,86)'}
+                            cursorColor={'rgb(25,42,86)'}
+                            secureTextEntry={show1}
+                            style={[styles.input, { borderWidth: inp3width, marginLeft:30 }]}
+                            onFocus={() => { setinp3width(2) }}
+                            onEndEditing={() => { setinp3width(1) }}
+                            value={password}
+                            onChangeText={(text) => { setpassword(text), handlePassword(text) }}
+                        />
+                        <TouchableOpacity style={{justifyContent:'center'}} onPress={()=>{setshow1(!show1)}}>
+                            {show1?<Image style={styles.Img} source={require('../assets/show.png')}/>:<Image style={styles.Img} source={require('../assets/hide.png')}/>}
+                         </TouchableOpacity>
+                    </View>
+                    {!loginmode && <View style={{flexDirection:'row',gap:10}}>
+                        <TextInput
+                            placeholder='Confirm password'
+                            placeholderTextColor={'rgb(25,42,86)'}
+                            cursorColor={'rgb(25,42,86)'}
+                            secureTextEntry={show2}
+                            style={[styles.input, { borderWidth: inp4width, marginLeft:30}]}
+                            onFocus={() => { setinp4width(2) }}
+                            onEndEditing={() => { setinp4width(1) }}
+                            value={confirmpassword}
+                            onChangeText={(text) => { setconfirmpassword(text) }}
+                        />
+                        <TouchableOpacity style={{justifyContent:'center'}} onPress={()=>{setshow2(!show2)}}>
+                            {show2?<Image style={styles.Img} source={require('../assets/show.png')}/>:<Image style={styles.Img} source={require('../assets/hide.png')}/>}
+                         </TouchableOpacity>
+                    </View>}
 
-                    <TouchableOpacity style={[styles.btns, { justifyContent: 'center', backgroundColor: 'rgba(165, 190, 252, 0.197)', }]} onPress={()=>loginmode?authenticate():createAccount()}>
-                        {loginmode?<Text style={[styles.btntxt, { fontWeight: 'bold' }]}>Login</Text>:
-                        <Text style={[styles.btntxt, { fontWeight: 'bold' }]}>Create account</Text>}
+                    <TouchableOpacity style={[styles.btns, { justifyContent: 'center', backgroundColor: 'rgba(165, 190, 252, 0.197)', }]} onPress={() => { nameValid && passValid ? loginmode ? authenticate() : createAccount() : Alert.alert("Ensure your credentials are in correct format") }}>
+                        {loginmode ? <Text style={[styles.btntxt, { fontWeight: 'bold' }]}>Login</Text> :
+                            <Text style={[styles.btntxt, { fontWeight: 'bold' }]}>Create account</Text>}
                     </TouchableOpacity></>}
 
                 <TouchableOpacity style={styles.btns}>
@@ -170,11 +210,11 @@ const Login = ({ navigation }: TabProps) => {
 
             </View>
             <View style={styles.redirect}>
-                {loginmode?<Text style={styles.btntxt}>Don't have an account? </Text>:
-                <Text style={styles.btntxt}>Already have an account? </Text>}
-                <TouchableOpacity onPress={() => {setloginmode(!loginmode)}}>
-                    {loginmode?<Text style={styles.redirectlink}>Create now</Text>:
-                    <Text style={styles.redirectlink}>Login</Text>}
+                {loginmode ? <Text style={styles.btntxt}>Don't have an account? </Text> :
+                    <Text style={styles.btntxt}>Already have an account? </Text>}
+                <TouchableOpacity onPress={() => { setloginmode(!loginmode) }}>
+                    {loginmode ? <Text style={styles.redirectlink}>Create now</Text> :
+                        <Text style={styles.redirectlink}>Login</Text>}
                 </TouchableOpacity>
             </View>
         </KeyboardAvoidingView>
@@ -184,6 +224,10 @@ const Login = ({ navigation }: TabProps) => {
 export default Login
 
 const styles = StyleSheet.create({
+    Img:{
+        height: 20,
+        width: 20,
+    },
     input: {
         color: 'rgb(25,42,86)',
         alignItems: 'center',
@@ -218,7 +262,7 @@ const styles = StyleSheet.create({
     btntxt: {
         color: 'rgb(25,42,86)',
         fontFamily: 'Inter_24pt-Regular',
-        fontWeight:'bold'
+        fontWeight: 'bold'
     },
     btns: {
         width: '60%',
@@ -238,7 +282,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold'
     },
     Logo: {
-        marginTop: '20%',
+        marginTop: '10%',
     },
     container: {
         backgroundColor: '#FBFCF8',
