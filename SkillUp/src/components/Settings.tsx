@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, StatusBar, TouchableOpacity, ScrollView, Image, FlatList, Alert, Dimensions } from 'react-native'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { useFocusEffect } from '@react-navigation/native';
 import { firebase_auth } from '../../firebaseConfig'
 import YoutubeIframe from 'react-native-youtube-iframe'
@@ -23,13 +23,18 @@ const Settings = () => {
 
 
   const handleSignout = async () => {
-    const RNFS = require('react-native-fs');
-    const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
-    await RNFS.unlink(path)
-    const path1 = RNFS.DocumentDirectoryPath + '/metadata.txt';
-    await RNFS.unlink(path1)
-    const path2 = RNFS.DocumentDirectoryPath + '/topics.txt';
-    await RNFS.unlink(path2)
+    try{
+      const RNFS = require('react-native-fs');
+      const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
+      await RNFS.unlink(path)
+      const path1 = RNFS.DocumentDirectoryPath + '/metadata.txt';
+      await RNFS.unlink(path1)
+      const path2 = RNFS.DocumentDirectoryPath + '/topics.txt';
+      await RNFS.unlink(path2)
+    }
+    catch{
+      null;
+    }
     // const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
     // RNFS.unlink(path)
     await firebase_auth.signOut();
@@ -207,7 +212,7 @@ const Settings = () => {
           }
           keyExtractor={item => item}
         >
-        </FlatList> : <View style={{ width: '100%', height: 120, alignItems: 'center', justifyContent: 'center' }}>
+        </FlatList> : <View style={{ width: '100%', height: 100, alignItems: 'center', justifyContent: 'center' }}>
           <Text style={styles.btntxt}>No courses enrolled</Text>
         </View>}
       </ View>

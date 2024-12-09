@@ -90,7 +90,10 @@ const VideoList = ({route}:TabProps) => {
       {myvidoesview&&<View style={{alignItems:'center'}}>
           <Text style={{color:'rgb(25,42,86)',fontFamily:'Inter_24pt-Regular',fontSize:25}}>Saved videos</Text>
       </View>}
-      <FlatList contentContainerStyle={{ alignItems: 'center' }} style={[styles.rec_videos]}
+      {metadata.length==0 &&<View style={{flex:1,alignItems:'center',justifyContent:'center'}}>
+          <Text style={{color:'rgb(25,42,86)',fontFamily:'Inter_24pt-Regular',fontSize:15}}>No Saved videos</Text>
+      </View>}
+      {metadata.length!=0 &&<FlatList contentContainerStyle={{ alignItems: 'center' }} style={[styles.rec_videos]}
         data={metadata}
         initialNumToRender={4}
         maxToRenderPerBatch={4}
@@ -107,7 +110,7 @@ const VideoList = ({route}:TabProps) => {
         }
         keyExtractor={item => item==null?item:item.videoID}
       >
-      </FlatList>
+      </FlatList>}
     </View>
   )
 }

@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Alert, FlatList,StatusBar, ScrollView } from 'react-native'
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Alert, FlatList,StatusBar, ScrollView, ActivityIndicator } from 'react-native'
 import React, { useState, useCallback, useEffect } from 'react'
 import YoutubeIframe from 'react-native-youtube-iframe'
 import { useFocusEffect } from '@react-navigation/native'
@@ -98,7 +98,7 @@ const VideoPreview = ({ route }: StackVideoProps) => {
 
     setloader(true)
     try {
-      const response = await fetch('https://cd8e-106-78-36-4.ngrok-free.app/transcript',
+      const response = await fetch('https://50f5-2409-4042-2d9b-6c2-1cd5-88dd-f86b-33d0.ngrok-free.app/transcript',
         {
           method: 'POST',
           headers:{
@@ -124,6 +124,7 @@ const VideoPreview = ({ route }: StackVideoProps) => {
     catch (error) {
       console.log(error);
       Alert.alert('Something went wrong !');
+      setloader(false);
     }
   }
 
@@ -176,6 +177,9 @@ const VideoPreview = ({ route }: StackVideoProps) => {
           await RNFS.writeFile(path2,JSON.stringify({"result":data["result"]}),'utf8');
           console.log("recommended file written");
         }
+        else{
+          console.log(metadata["metadata"].length);
+        }
       }
     } 
     else{
@@ -185,7 +189,7 @@ const VideoPreview = ({ route }: StackVideoProps) => {
 
   const EngineCall = async (currentID:string,metadata:any)=>{
     console.log(200);
-    const response = await fetch('https://af80-2409-40c2-3b-684a-e5b9-7235-4746-e48f.ngrok-free.app/recommender',
+    const response = await fetch('https://a705-202-160-145-172.ngrok-free.app/recommender',
       {
         method: 'POST',
         headers:{
@@ -231,7 +235,7 @@ const VideoPreview = ({ route }: StackVideoProps) => {
         />
         <Text style={styles.videoTitle}>{item.title}</Text>
       </View>
-      {quizdata.length == 0&&<View style={styles.btnspace}>
+      {<View style={[styles.btnspace,quizView?{display:'none'}:{}]}>
         <TouchableOpacity style={styles.btns} onPress={() => { savedata() }} >
           <Text style={styles.btntitle}>Save</Text>
         </TouchableOpacity>
@@ -239,10 +243,13 @@ const VideoPreview = ({ route }: StackVideoProps) => {
           <Text style={styles.btntitle}>Generate quiz</Text>
         </TouchableOpacity>
       </View>}
-      {loader && <View style={{ flex: 1, alignItems: 'center', width: '100%', height: 'auto' }}>
-        <Text style={{ color: 'red' }}>Loading....</Text>
-      </View>}
-      {quizdata.length != 0&& <View style={styles.quizlayout}>
+      {loader && <ActivityIndicator
+            animating={true}
+            color={'rgb(25,42,86)'}
+            size={Dimensions.get('window').width/8}
+          >  
+          </ActivityIndicator>}
+      {quizdata.length != 0 && quizView&&<View style={styles.quizlayout}>
         <View style={styles.header}>
           {/* <Text style={styles.headertxt}>Multiple Choice Questions</Text> */}
           <Text style={styles.headertxt}>Marks obtained : {count}/{quizdata.length}</Text>

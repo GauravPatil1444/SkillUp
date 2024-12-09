@@ -23,7 +23,8 @@ def transcript(videoID):
 
         if(len(txtlist)>=800000):
             status = False
-    except:
+    except Exception as e:
+        print(e)
         status = False
 
     # print(result)

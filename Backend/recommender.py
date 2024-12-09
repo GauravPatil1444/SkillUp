@@ -10,8 +10,8 @@ def recommender(id,data):
 
     df = pd.json_normalize(data)
     data = pd.DataFrame(df[['videoID','title']])    
-    # nlp = spacy.load(r'C:\Users\patil\AppData\Roaming\Python\Python311\site-packages\en_core_web_sm\en_core_web_sm-3.7.1')
-    nlp = spacy.load('en_core_web_sm')
+    nlp = spacy.load(r'C:\Users\patil\AppData\Roaming\Python\Python311\site-packages\en_core_web_sm\en_core_web_sm-3.7.1')
+    # nlp = spacy.load('en_core_web_sm')
 
     def preprocess(text):
         exclude = string.punctuation

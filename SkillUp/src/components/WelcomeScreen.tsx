@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, StatusBar, Alert, TextInput, SafeAreaView, Image, Dimensions } from 'react-native'
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, StatusBar, Alert, TextInput, SafeAreaView, Image, Dimensions, ActivityIndicator } from 'react-native'
 import React = require('react')
 import { useCallback } from 'react'
 import YoutubeIframe from 'react-native-youtube-iframe'
@@ -39,7 +39,7 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
   const [metadata, setmetadata] = useState<videometadata[]>([])
   const [loader, setloader] = useState(true)
   const [userData, setuserData] = useState<any>([])
-  const [topics, settopics] = useState([])
+  const [topics, settopics] = useState(["Web development", "Machine Learning", "Python", "Java"])
   const [newUser, setnewUser] = useState(false)
   const [metadataAvail, setmetadataAvail] = useState(false);
   const RNFS = require('react-native-fs');
@@ -48,6 +48,8 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
   const Logo = require('../assets/Logo.png')
 
   const fetchdata = async () => {
+    const API_Call = await fetch('https://skillup-505952169629.us-central1.run.app/customsearch')
+    console.log(200,API_Call.text);
     try{
       console.log("staring 1");
       
@@ -96,7 +98,7 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
     const searchQuery = query==='N'?searchinp:query;
     // setheadertitle('Search results')
     try {
-      const searchresult = await fetch('https://af80-2409-40c2-3b-684a-e5b9-7235-4746-e48f.ngrok-free.app/customsearch',
+      const searchresult = await fetch('https://skillup-505952169629.us-central1.run.app/customsearch',
         {
           method: 'post',
           headers: {
@@ -270,7 +272,7 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
         {userData.length!=0&&<Text style={styles.headertxt}>Welcome, {userData["UserDetails"]["name"]}</Text>}
         <Image style={[{width: Dimensions.get('window').width / 3.5, height: Dimensions.get('window').width / 3.5}]} source={Logo} />
 
-        {topics.length != 0 && <View style={styles.videoTopics}>
+        <View style={styles.videoTopics}>
           <FlatList
             contentContainerStyle={{ gap: 5 }}
             horizontal={true}
@@ -282,12 +284,17 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
             }
           >
           </FlatList>
-        </View>}
+        </View>
       </View>
       <View style={styles.rec_videos}>
-        {loader && <View style={{ flex: 1, alignItems: 'center', width: '100%', height: 'auto' }}>
-          <Text style={{ color: 'red' }}>Loading....</Text>
-        </View>}
+        {loader && 
+          <ActivityIndicator
+            animating={true}
+            color={'rgb(25,42,86)'}
+            size={Dimensions.get('window').width/8}
+          >  
+          </ActivityIndicator>
+        }
         {!loader && metadataAvail &&<TouchableOpacity
           style={styles.expandbtn}
           onPress={() => { navigation.getParent<TabProps['navigation']>().navigate('VideoList', { metadata }) }}
@@ -381,7 +388,8 @@ const styles = StyleSheet.create({
     flex: 1,
     width: 'auto',
     fontSize: 15,
-    paddingVertical: 4
+    paddingVertical: 4,
+    color:'#FBFCF8'
   },
   homecontainer: {
     flex: 1,

@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, StatusBar, SafeAreaView, TextInput, Alert, TouchableOpacity, FlatList, Dimensions, Image, ScrollView } from 'react-native'
+import { View, Text, StyleSheet, StatusBar, SafeAreaView, TextInput, Alert, TouchableOpacity, FlatList, Dimensions, Image, ScrollView, ActivityIndicator } from 'react-native'
 import React, { useCallback, useState, useEffect } from 'react'
 import { useFocusEffect } from '@react-navigation/native';
 import YoutubeIframe from 'react-native-youtube-iframe';
@@ -39,6 +39,7 @@ const Courses = ({route}:TabProps) => {
   const [pressCount, setpressCount] = useState(1)
   const [update, setupdate] = useState(false)
   const [mycoursesview, setmycoursesview] = useState(false)
+  let backupMetadata:any = []
 
   const RNFS = require('react-native-fs'); 
 
@@ -71,7 +72,7 @@ const Courses = ({route}:TabProps) => {
     setloader(true);
     setmetadata([])
     try {
-      const searchresult = await fetch('https://cd8e-106-78-36-4.ngrok-free.app/fetchcourses',
+      const searchresult = await fetch('https://skillup-505952169629.us-central1.run.app/fetchcourses',
         {
           method: 'post',
           headers: {
@@ -91,6 +92,7 @@ const Courses = ({route}:TabProps) => {
         setmetadata(prevMetadata => [...prevMetadata, result[i + 1]]);
       }
       setloader(false)
+      setmycoursesview(false);
     }
     catch (error) {
       console.log(error)
@@ -114,9 +116,10 @@ const Courses = ({route}:TabProps) => {
     }
     setcoursevideolist([]);
     setcourseMetadata(item);
+    backupMetadata = item;
     setloader(true);
 
-    const fetchvideos = await fetch('https://cd8e-106-78-36-4.ngrok-free.app/fetchcoursevideos',
+    const fetchvideos = await fetch('https://skillup-505952169629.us-central1.run.app/fetchcoursevideos',
       {
         method: 'post',
         headers: {
@@ -270,9 +273,13 @@ const Courses = ({route}:TabProps) => {
           </TouchableOpacity>
         </View>
       </View>}
-      {loader && <View style={{ flex: 1, alignItems: 'center', width: '100%', height: 'auto' }}>
-        <Text style={{ color: 'red' }}>Loading....</Text>
-      </View>}
+      {loader && <ActivityIndicator
+            animating={true}
+            color={'rgb(25,42,86)'}
+            size={Dimensions.get('window').width/8}
+          >  
+          </ActivityIndicator>
+      }
       {!loader && !viewcourse && <View style={styles.list_videos}>
         {mycoursesview&&<View style={{alignItems:'center'}}>
           <Text style={{color:'rgb(25,42,86)',fontFamily:'Inter_24pt-Regular',fontSize:25}}>My courses</Text>

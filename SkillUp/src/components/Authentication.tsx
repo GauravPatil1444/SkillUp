@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, StatusBar, TextInput, KeyboardAvoidingView, Alert } from 'react-native'
+import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, StatusBar, TextInput, KeyboardAvoidingView, Alert, ActivityIndicator } from 'react-native'
 import { useFocusEffect } from '@react-navigation/native'
 import React, { useCallback, useState } from 'react'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
@@ -26,9 +26,11 @@ const Login = ({ navigation }: TabProps) => {
     const [passValid, setpassValid] = useState(true)
     const [show1, setshow1] = useState(true);
     const [show2, setshow2] = useState(true)
+    const [loader, setloader] = useState(false)
     const RNFS = require('react-native-fs');
 
     const createAccount = async () => {
+        setloader(true);
         if (password == confirmpassword) {
             if (password.length > 4) {
                 try {
@@ -73,13 +75,16 @@ const Login = ({ navigation }: TabProps) => {
             }
             else{
                 Alert.alert("Password length must be atleast 4");
+                setloader(false);
             }
         }
         else {
             Alert.alert("confirm password doesn't matched !");
+            setloader(false);
         }
     }
     const authenticate = async () => {
+        setloader(true);
         try {
             const response = await signInWithEmailAndPassword(firebase_auth, email, password);
             // console.log(response);
@@ -100,6 +105,7 @@ const Login = ({ navigation }: TabProps) => {
         }
         catch (e: any) {
             Alert.alert("Invalid email or password !");
+            setloader(false);
         }
     }
 
@@ -128,6 +134,7 @@ const Login = ({ navigation }: TabProps) => {
         useCallback(() => {
             StatusBar.setBackgroundColor('#FBFCF8');
             StatusBar.setBarStyle('dark-content');
+            setloader(false);
         }, [])
     );
 
@@ -198,9 +205,15 @@ const Login = ({ navigation }: TabProps) => {
                          </TouchableOpacity>
                     </View>}
 
-                    <TouchableOpacity style={[styles.btns, { justifyContent: 'center', backgroundColor: 'rgba(165, 190, 252, 0.197)', }]} onPress={() => { nameValid && passValid ? loginmode ? authenticate() : createAccount() : Alert.alert("Ensure your credentials are in correct format") }}>
-                        {loginmode ? <Text style={[styles.btntxt, { fontWeight: 'bold' }]}>Login</Text> :
-                            <Text style={[styles.btntxt, { fontWeight: 'bold' }]}>Create account</Text>}
+                    <TouchableOpacity disabled={loader} style={[styles.btns, { justifyContent: 'center', backgroundColor: 'rgba(165, 190, 252, 0.197)', }]} onPress={() => { nameValid && passValid ? loginmode ? authenticate() : createAccount() : Alert.alert("Ensure your credentials are in correct format") }}>
+                        {loginmode&&!loader ? <Text style={[styles.btntxt, { fontWeight: 'bold' }]}>Login</Text> :
+                            !loader&&<Text style={[styles.btntxt, { fontWeight: 'bold' }]}>Create account</Text>}
+                            {loader&&<ActivityIndicator
+                                animating={true}
+                                color={'rgb(25,42,86)'}
+                                size={'small'}
+                            >
+                            </ActivityIndicator>}
                     </TouchableOpacity></>}
 
                 <TouchableOpacity style={styles.btns}>
