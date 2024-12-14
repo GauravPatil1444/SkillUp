@@ -9,28 +9,29 @@ load_dotenv()
 
 KEY = os.getenv("KEY")
 
-def transcript(videoID):
-    result = ''
-    txtlist = []
-    status = True
+def transcript(data):
+    # result = ''
+    # txtlist = []
+    # status = True
+    # try:
+    #     transcript_list = YouTubeTranscriptApi.list_transcripts(videoID)
+    #     transcript = transcript_list.find_transcript(['hi', 'en'])
+    #     translated_transcript = transcript.translate('en')
+    #     result = translated_transcript.fetch()
+    #     for txt in range(len(result)):
+    #         txtlist.append(result[txt]['text'])
+
+    #     if(len(txtlist)>=800000):
+    #         status = False
+    # except Exception as e:
+    #     print(e)
+    #     status = False
+
+    # # print(result)
+    # data = ' '.join(txtlist)
+    # # print(data)
+    # if status:
     try:
-        transcript_list = YouTubeTranscriptApi.list_transcripts(videoID)
-        transcript = transcript_list.find_transcript(['hi', 'en'])
-        translated_transcript = transcript.translate('en')
-        result = translated_transcript.fetch()
-        for txt in range(len(result)):
-            txtlist.append(result[txt]['text'])
-
-        if(len(txtlist)>=800000):
-            status = False
-    except Exception as e:
-        print(e)
-        status = False
-
-    # print(result)
-    data = ' '.join(txtlist)
-    # print(data)
-    if status:
         genai.configure(api_key=KEY)
         model = genai.GenerativeModel('gemini-1.5-flash')
         format = {
@@ -52,5 +53,5 @@ def transcript(videoID):
         data = json5.loads(json_data)
         # print(type(data))
         return data
-    else:
-        return {'error':'video is either not suitable or too long'}
+    except Exception as e:
+        return {'error':e}

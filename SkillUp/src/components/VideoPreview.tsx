@@ -7,6 +7,7 @@ import { StackParamList } from '../App'
 import { collection, updateDoc, doc, getDocs } from 'firebase/firestore'
 import { db } from '../../firebaseConfig'
 import { firebase_auth } from '../../firebaseConfig'
+import { YoutubeTranscript } from 'youtube-transcript';
 // import { TabParamList } from '../App'
 
 type StackVideoProps = NativeStackScreenProps<StackParamList, 'VideoPreview'>
@@ -98,17 +99,26 @@ const VideoPreview = ({ route }: StackVideoProps) => {
 
     setloader(true)
     try {
-      const response = await fetch('https://50f5-2409-4042-2d9b-6c2-1cd5-88dd-f86b-33d0.ngrok-free.app/transcript',
+
+      let txtlist = []
+      const response = await YoutubeTranscript.fetchTranscript(item.videoID);
+      for(let i=0;i<response.length;i++){
+        txtlist.push(response[i]['text'])
+      }
+      // console.log(txtlist);
+      const transrc = txtlist.join(' ');
+      
+      const res = await fetch('https://skillup-505952169629.us-central1.run.app/transcript',
         {
           method: 'POST',
           headers:{
             'Accept': 'application/json',
             'Content-Type': 'application/json'
           },
-          body : JSON.stringify({'videoID' : item.videoID})
+          body : JSON.stringify({'data' : transrc})
         }
       )
-      const data = await response.json() 
+      const data = await res.json() 
       if (data['error']) {
         Alert.alert(data.error);
       }

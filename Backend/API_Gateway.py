@@ -37,7 +37,7 @@ def write_request_data(data):
 
 class Item(BaseModel):
     q: str|None = None
-    videoID:str|None = None
+    data:str|None = None
 
 
 @app.get("/")
@@ -66,8 +66,8 @@ async def sendtranscript(item:Item):
     
     LAST_CALL_TIME = current_time
     data = item.model_dump()
-    videoID = data['videoID']
-    return transcript(videoID)
+    transcr = data['data']
+    return transcript(transcr)
     
     
 @app.post("/customsearch")
