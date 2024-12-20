@@ -7,8 +7,10 @@ import { useFocusEffect } from '@react-navigation/native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { StackParamList, TabParamList } from '../App'
 import { firebase_auth } from '../../firebaseConfig'
-import { collection, getDocs, addDoc, updateDoc, doc } from 'firebase/firestore'
+import { collection, getDocs, updateDoc, doc, addDoc } from 'firebase/firestore'
 import { db } from '../../firebaseConfig'
+import EncryptedStorage4 from 'react-native-encrypted-storage'
+import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
 
 type TabProps = NativeStackScreenProps<TabParamList, 'StackNavigation'>
 type StackProps = NativeStackScreenProps<StackParamList, 'WelcomeScreen'>
@@ -21,9 +23,25 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
   }
 
   useEffect(() => {
-    firebase_auth.onAuthStateChanged((user) => {
-      if (user === null) {
+    firebase_auth.onAuthStateChanged(async(user) => {
+      let status = false;
+      try{
+        const res = await ReactNativeAsyncStorage.getItem("isLoggedIn")
+        if(res==="true"){
+          const uid:any = await EncryptedStorage4.getItem("uid")
+          setuid(uid)
+          status = true;
+          // console.log("true",uid);
+        }
+      }
+      catch{
+      }
+      if (user === null && status === false) {
         navigation.getParent<TabProps['navigation']>().navigate('Authentication');
+      }
+      if(status === false){
+        let id:any = firebase_auth.currentUser?.uid;
+        setuid(id)
       }
       // console.log(user);
     })
@@ -39,17 +57,16 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
   const [metadata, setmetadata] = useState<videometadata[]>([])
   const [loader, setloader] = useState(true)
   const [userData, setuserData] = useState<any>([])
+  const [username, setusername] = useState()
   const [topics, settopics] = useState(["Web development", "Machine Learning", "Python", "Java"])
-  const [newUser, setnewUser] = useState(false)
   const [metadataAvail, setmetadataAvail] = useState(false);
+  const [uid, setuid] = useState()
   const RNFS = require('react-native-fs');
 
   // const topics = ['UmnCZ7-9yDY', 'GwIo3gDZCVQ', 'A74TOX803D0', 'xk4_1vDrzzo', 'ntLJmHOJ0ME', 'Pj0neYUp9Tc', 'dz458ZkBMak', 'eIrMbAQSU34', 'gJ9DYC-jswo', 't8pPdKYpowI']
   const Logo = require('../assets/Logo.png')
 
   const fetchdata = async () => {
-    const API_Call = await fetch('https://skillup-505952169629.us-central1.run.app/customsearch')
-    console.log(200,API_Call.text);
     try{
       console.log("staring 1");
       
@@ -57,38 +74,43 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
       const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
       const file = await RNFS.readFile(path, 'utf8');
       const user_preferences = JSON.parse(file);
-
+      
       const path1 = RNFS.DocumentDirectoryPath + '/topics.txt';
       const file1 = await RNFS.readFile(path1, 'utf8');
       const topics = JSON.parse(file1);
-
+      
+      setusername(user_preferences["UserDetails"]["name"])
       setuserData(user_preferences);
       console.log(user_preferences);
       console.log(topics);
       settopics(topics["topics"]);
     }
-    catch{
-      console.log("staring 2");
+    catch(e){
+      console.log("staring 2",e);
       const RNFS = require('react-native-fs');
-      firebase_auth.onAuthStateChanged( async (user)=>{
-        const docRef = collection(db, "users",`${user?.uid}/UserPreferences`);
-        const docSnap = await getDocs(docRef);
-
-        const docRef1 = collection(db, "users",`${user?.uid}/topics`);
-        const docSnap1 = await getDocs(docRef1);
-
-        setuserData(JSON.parse(JSON.stringify(docSnap.docs[0].data())));
-        const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
-        await RNFS.writeFile(path, JSON.stringify(docSnap.docs[0].data()), 'utf8')
-
-        const topics =  await JSON.parse(JSON.stringify(docSnap1.docs[0].data()["topics"]))
-        console.log(JSON.parse(JSON.stringify(docSnap1.docs[0].data()["topics"])));
+      // firebase_auth.onAuthStateChanged( async (user)=>{
         
-        settopics(topics["topics"]);
-        const path1 = RNFS.DocumentDirectoryPath + '/topics.txt';
-        await RNFS.writeFile(path1, JSON.stringify(docSnap1.docs[0].data()), 'utf8')
-      })
+      const docRef = collection(db, "users",`${uid}/UserPreferences`);
+      const docSnap = await getDocs(docRef);
+      
+      const docRef1 = collection(db, "users",`${uid}/topics`);
+      const docSnap1 = await getDocs(docRef1);
+      
+      setuserData(JSON.parse(JSON.stringify(docSnap.docs[0].data())));
+      const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
+      await RNFS.writeFile(path, JSON.stringify(docSnap.docs[0].data()), 'utf8')
+      
+      const topics =  await JSON.parse(JSON.stringify(docSnap1.docs[0].data()["topics"]))
+      console.log(JSON.parse(JSON.stringify(docSnap1.docs[0].data()["topics"])));
+      
+      settopics(topics["topics"]);
+      const path1 = RNFS.DocumentDirectoryPath + '/topics.txt';
+      await RNFS.writeFile(path1, JSON.stringify(docSnap1.docs[0].data()), 'utf8')
+      // })
     }
+    const API_Call:any = await fetch('https://skillup-505952169629.us-central1.run.app/')
+    let str = await API_Call.json()
+    console.log(str);
   }
 
   const search = async (query:string) => {
@@ -184,9 +206,9 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
   
     await RNFS.writeFile(path1, JSON.stringify(metadata), 'utf8');
     await RNFS.writeFile(path2, JSON.stringify(topics), 'utf8');
-    const docRef = collection(db, "users",`${firebase_auth.currentUser?.uid}/topics`);
+    const docRef = collection(db, "users",`${uid}/topics`);
     const docSnap = await getDocs(docRef);
-    const docref = doc(db, "users", `${firebase_auth.currentUser?.uid}`, "topics", docSnap.docs[0].id);
+    const docref = doc(db, "users", `${uid}`, "topics", docSnap.docs[0].id);
     await updateDoc(docref,topics);
     settopics(topics["topics"]);
     // const docRef1 = await addDoc(collection(db, "users",`${firebase_auth.currentUser?.uid}/metadata`), metadata);
@@ -228,12 +250,30 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
       setmetadata(mixed);
       setloader(false);
       setmetadataAvail(true);
-      // const path2 = RNFS.DocumentDirectoryPath + '/recommended.txt';
-      // await RNFS.writeFile(path2,JSON.stringify({"result":shuffled}),'utf8');
-      // console.log("recommended file written");
+      // try{
+      //   const docRef = collection(db, "users",`${uid}/recommendations`);
+      //   const docSnap = await getDocs(docRef);
+      //   const document = doc(db, "users", `${uid}`, "recommendations", docSnap.docs[0].id);
+      //   await updateDoc(docref,mixed);
+      // }
+      // catch{
+      //   await addDoc(collection(db, "users", `${uid}/recommendations`), mixed);
+      // }
+      const filepath = RNFS.DocumentDirectoryPath + '/shuffled.txt';
+      await RNFS.writeFile(filepath, JSON.stringify(mixed), 'utf8')
     }
     catch{
-      setloader(false);
+        //  The code for fetching recommendations from firestore goes here !!!
+        try{
+          const docRef = collection(db, "users",`${uid}/recommendations`);
+          const docSnap = await getDocs(docRef);
+          const document = docSnap.docs[0].data();
+          const data:any = JSON.stringify(document);
+          setmetadata(data);
+        }
+        catch{
+          setloader(false);
+        }
     }
   }
 
@@ -269,7 +309,7 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
           </TouchableOpacity>
         </View>
 
-        {userData.length!=0&&<Text style={styles.headertxt}>Welcome, {userData["UserDetails"]["name"]}</Text>}
+        {userData.length!=0&&<Text style={styles.headertxt}>Welcome, {username}</Text>}
         <Image style={[{width: Dimensions.get('window').width / 3.5, height: Dimensions.get('window').width / 3.5}]} source={Logo} />
 
         <View style={styles.videoTopics}>
@@ -304,7 +344,7 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
         </TouchableOpacity>}
         
         {!metadataAvail&&userData.length!=0&&<View style={{alignItems:'center'}}>
-          <Text style={styles.rec_txt}>Hey {userData["UserDetails"]["name"]} 👋, Try watching various kind of videos to get recommendations</Text>
+          <Text style={styles.rec_txt}>Hey {username} 👋, Try watching various kind of videos to get recommendations</Text>
         </View>}
 
         {!loader&&metadataAvail && <FlatList contentContainerStyle={{ alignItems: 'center', gap: 15 }} style={[styles.list_videos]}

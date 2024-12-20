@@ -33,6 +33,7 @@ const VideoList = ({route}:TabProps) => {
         data.push(item)
       })
       setmetadata(data);
+      setmyvideosview(true);
       // console.log(user_preferences['saved']);
     }
     else {
@@ -45,13 +46,14 @@ const VideoList = ({route}:TabProps) => {
           setmetadata(data);
           const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
           await RNFS.writeFile(path, data, 'utf8')
+          setmyvideosview(true);
         }
       }
       catch {
         console.log("Can't retrive documents");
+        setmyvideosview(false);
       }
     }
-    setmyvideosview(true);
   }
 
   useFocusEffect(

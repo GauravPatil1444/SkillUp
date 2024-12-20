@@ -8,6 +8,8 @@ import { collection, updateDoc, doc, getDocs } from 'firebase/firestore'
 import { db } from '../../firebaseConfig'
 import { firebase_auth } from '../../firebaseConfig'
 import { YoutubeTranscript } from 'youtube-transcript';
+import EncryptedStorage4 from 'react-native-encrypted-storage'
+import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
 // import { TabParamList } from '../App'
 
 type StackVideoProps = NativeStackScreenProps<StackParamList, 'VideoPreview'>
@@ -34,6 +36,7 @@ const VideoPreview = ({ route }: StackVideoProps) => {
   const [pressCount, setpressCount] = useState(1)
   const [quizView, setquizView] = useState(false)
   const [update, setupdate] = useState(false)
+  const [uid, setuid] = useState()
 
   const writedata = async (currentID:string)=>{
     const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
@@ -154,10 +157,10 @@ const VideoPreview = ({ route }: StackVideoProps) => {
     const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
     const file = await RNFS.readFile(path, 'utf8');
     // console.log(file);
-    console.log(firebase_auth.currentUser?.uid);
-    const docRef = collection(db, "users",`${firebase_auth.currentUser?.uid}/UserPreferences`);
+    console.log(uid);
+    const docRef = collection(db, "users",`${uid}/UserPreferences`);
     const docSnap = await getDocs(docRef);
-    const docref = doc(db, "users", `${firebase_auth.currentUser?.uid}`, "UserPreferences", docSnap.docs[0].id);
+    const docref = doc(db, "users", `${uid}`, "UserPreferences", docSnap.docs[0].id);
     await updateDoc(docref,JSON.parse(file));
     console.log("Document updated successful !", docSnap.docs[0].id);
   }
@@ -227,6 +230,30 @@ const VideoPreview = ({ route }: StackVideoProps) => {
   useEffect(()=> {
     updateData();
   }, [update])
+
+  useEffect(() => {
+    const getuid = async()=>{
+      
+      let status = false;
+      try{
+        const res = await ReactNativeAsyncStorage.getItem("isLoggedIn")
+        if(res==="true"){
+          const uid:any = await EncryptedStorage4.getItem("uid")
+          setuid(uid)
+          status = true;
+          // console.log("true",uid);
+        }
+      }
+      catch{
+      }
+      if(status === false){
+        let id:any = firebase_auth.currentUser?.uid;
+        setuid(id)
+      }
+    }
+    getuid();
+  }, [])
+  
 
   useFocusEffect(
     useCallback(() => {

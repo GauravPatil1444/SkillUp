@@ -39,6 +39,7 @@ const Courses = ({route}:TabProps) => {
   const [pressCount, setpressCount] = useState(1)
   const [update, setupdate] = useState(false)
   const [mycoursesview, setmycoursesview] = useState(false)
+  const [NoCourse, setNoCourse] = useState(false)
   let backupMetadata:any = []
 
   const RNFS = require('react-native-fs'); 
@@ -70,6 +71,7 @@ const Courses = ({route}:TabProps) => {
 
   const search = async () => {
     setloader(true);
+    setNoCourse(false);
     setmetadata([])
     try {
       const searchresult = await fetch('https://skillup-505952169629.us-central1.run.app/fetchcourses',
@@ -231,10 +233,11 @@ const Courses = ({route}:TabProps) => {
       }
       catch {
         console.log("Can't retrive documents");
+        setloader(false);
+        setNoCourse(true);
       }
     }
   }
-
 
 
   const updateData = async ()=>{
@@ -281,8 +284,10 @@ const Courses = ({route}:TabProps) => {
           </ActivityIndicator>
       }
       {!loader && !viewcourse && <View style={styles.list_videos}>
-        {mycoursesview&&<View style={{alignItems:'center'}}>
+        {mycoursesview?<View style={{alignItems:'center'}}>
           <Text style={{color:'rgb(25,42,86)',fontFamily:'Inter_24pt-Regular',fontSize:25}}>My courses</Text>
+        </View>:NoCourse&&<View style={[{alignItems:'center',justifyContent:'center',height:'50%'}]}>
+          <Text style={{color:'rgb(25,42,86)',fontFamily:'Inter_24pt-Regular',fontSize:25}}>No Courses Saved</Text>
         </View>}
         <FlatList contentContainerStyle={{ alignItems: 'center' }} style={[styles.rec_videos]}
           data={metadata}
@@ -410,7 +415,8 @@ const styles = StyleSheet.create({
     height: '35%',
     backgroundColor: 'rgb(25,42,86)',
     alignItems:'center',
-    gap:5
+    gap:5,
+    elevation:3
     // borderBottomRightRadius:30,
     // borderBottomLeftRadius:30,
   },

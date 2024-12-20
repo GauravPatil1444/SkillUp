@@ -1,10 +1,13 @@
 import { View, Text, StyleSheet, StatusBar, TouchableOpacity, ScrollView, Image, FlatList, Alert, Dimensions } from 'react-native'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useState, useEffect } from 'react'
 import { useFocusEffect } from '@react-navigation/native';
 import { firebase_auth } from '../../firebaseConfig'
 import YoutubeIframe from 'react-native-youtube-iframe'
 import { useNavigation } from '@react-navigation/native';
-import { signOut } from 'firebase/auth';
+import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
+import EncryptedStorage4 from 'react-native-encrypted-storage'
+import { collection, getDocs, updateDoc, doc, addDoc } from 'firebase/firestore'
+import { db } from '../../firebaseConfig'
 
 const Settings = () => {
 
@@ -17,26 +20,58 @@ const Settings = () => {
   const [saved, setsaved] = useState<any>({})
   const [courses, setcourses] = useState<any>({})
   const [count, setcount] = useState(1)
+  const [uid, setuid] = useState()
   // const [metadata, setmetadata] = useState<videometadata[]>([])
 
   const metadata = ['UmnCZ7-9yDY', 'GwIo3gDZCVQ', 'A74TOX803D0', 'xk4_1vDrzzo', 'ntLJmHOJ0ME', 'Pj0neYUp9Tc', 'dz458ZkBMak', 'eIrMbAQSU34', 'gJ9DYC-jswo', 't8pPdKYpowI']
 
 
   const handleSignout = async () => {
-    try{
+    const RNFS = require('react-native-fs');
+    try {
       const RNFS = require('react-native-fs');
       const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
-      await RNFS.unlink(path)
+      await RNFS.unlink(path);
       const path1 = RNFS.DocumentDirectoryPath + '/metadata.txt';
-      await RNFS.unlink(path1)
+      await RNFS.unlink(path1);
       const path2 = RNFS.DocumentDirectoryPath + '/topics.txt';
-      await RNFS.unlink(path2)
+      await RNFS.unlink(path2);
+      const path3 = RNFS.DocumentDirectoryPath + '/recommended.txt';
+      await RNFS.unlink(path3);
     }
-    catch{
+    catch {
       null;
     }
     // const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
     // RNFS.unlink(path)
+    try{
+      let mixed:any;
+      const filepath = RNFS.DocumentDirectoryPath + '/shuffled.txt';
+      mixed = await RNFS.readFile(filepath, 'utf8');
+      try{
+        const docRef = collection(db, "users",`${uid}/recommendations`);
+        const docSnap = await getDocs(docRef);
+        const document = doc(db, "users", `${uid}`, "recommendations", docSnap.docs[0].id);
+        await updateDoc(document,JSON.parse(mixed));
+      }
+      catch(e){
+        console.log(e);
+        await addDoc(collection(db, "users", `${uid}/recommendations`), JSON.parse(mixed));
+      }
+    }
+    catch(e){
+      console.log(e);
+    }
+    try {
+      const res = await ReactNativeAsyncStorage.getItem("isLoggedIn")
+      if (res === "true") {
+        EncryptedStorage4.clear();
+        ReactNativeAsyncStorage.clear();
+        // console.log("true",uid);
+      }
+    }
+    catch {
+    }
     await firebase_auth.signOut();
     navigation.navigate('Authentication');
   }
@@ -65,7 +100,7 @@ const Settings = () => {
     setsaved(() => {
       let newData = user_preferences['saved'];
       console.log(JSON.stringify(newData));
-      return newData  
+      return newData
     });
     setcourses(() => {
       const newData = user_preferences['courses'];
@@ -75,12 +110,12 @@ const Settings = () => {
 
   }
 
-  const signOutviaLogo = ()=>{
-    if(count==2){
+  const signOutviaLogo = () => {
+    if (count == 2) {
       setcount(1);
       handleSignout();
     }
-    else{
+    else {
       setcount(2);
       Alert.alert("Press again to Sign out");
     }
@@ -94,6 +129,29 @@ const Settings = () => {
     }, [])
   );
 
+  useEffect(() => {
+    const getuid = async()=>{
+      
+      let status = false;
+      try{
+        const res = await ReactNativeAsyncStorage.getItem("isLoggedIn")
+        if(res==="true"){
+          const uid:any = await EncryptedStorage4.getItem("uid")
+          setuid(uid)
+          status = true;
+          // console.log("true",uid);
+        }
+      }
+      catch{
+      }
+      if(status === false){
+        let id:any = firebase_auth.currentUser?.uid;
+        setuid(id)
+      }
+    }
+    getuid();
+  }, [])
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -101,7 +159,7 @@ const Settings = () => {
           <ScrollView horizontal={true} style={{ flexDirection: 'row' }}>
             {user.length != 0 && <Text style={styles.headertxt}>{user}</Text>}
           </ScrollView>
-          <TouchableOpacity onPress={()=>{signOutviaLogo()}}>
+          <TouchableOpacity onPress={() => { signOutviaLogo() }}>
             <View style={styles.profile} >
               <Text style={styles.profiletxt}>{user[0]}</Text>
             </View>
@@ -118,20 +176,21 @@ const Settings = () => {
           </View>
           <TouchableOpacity
             style={styles.headerbtns}
-            onPress={()=>{navigation.navigate('VideoList',history);
+            onPress={() => {
+              navigation.navigate('VideoList', history);
             }}
           >
             <Text style={{ fontFamily: 'Inter_24pt-Regular', fontSize: 16, color: 'rgb(25,42,86)' }}>View all</Text>
             <Image style={styles.btnImg} source={require('../assets/expand.png')} />
           </TouchableOpacity>
         </View>
-        {history.length != 0 ? <FlatList horizontal={true} contentContainerStyle={{ alignItems: 'center', gap: 15, paddingHorizontal:8 }} style={[styles.videolist]}
+        {history.length != 0 ? <FlatList horizontal={true} contentContainerStyle={{ alignItems: 'center', gap: 15, paddingHorizontal: 8 }} style={[styles.videolist]}
           data={history}
           initialNumToRender={2}
           maxToRenderPerBatch={2}
           renderItem={({ item }: any) => {
             return (
-              <TouchableOpacity style={{height:150,backgroundColor:'rgba(165, 190, 252, 0.197)'}} onPress={() => { navigation.navigate('VideoPreview', { item }) }}>
+              <TouchableOpacity style={{ height: 150, backgroundColor: 'rgba(165, 190, 252, 0.197)' }} onPress={() => { navigation.navigate('VideoPreview', { item }) }}>
 
                 <YoutubeIframe
                   height={200}
@@ -146,7 +205,7 @@ const Settings = () => {
           }}
           keyExtractor={item => item.videoID}
         >
-        </FlatList>:<View style={{ width: '100%', height: 140, alignItems: 'center', justifyContent: 'center' }}>
+        </FlatList> : <View style={{ width: '100%', height: 140, alignItems: 'center', justifyContent: 'center' }}>
           <Text style={styles.btntxt}>No history</Text>
         </View>}
       </ View>
@@ -157,18 +216,18 @@ const Settings = () => {
           </View>
           <TouchableOpacity
             style={styles.headerbtns}
-            onPress={()=>{navigation.navigate('VideoList',saved)}}
+            onPress={() => { navigation.navigate('VideoList', saved) }}
           >
             <Text style={{ fontFamily: 'Inter_24pt-Regular', fontSize: 16, color: 'rgb(25,42,86)' }}>View all</Text>
             <Image style={styles.btnImg} source={require('../assets/expand.png')} />
           </TouchableOpacity>
         </View>
-        {saved.length != 0  ? <FlatList horizontal={true} contentContainerStyle={{ alignItems: 'center', gap: 15, paddingHorizontal:8 }} style={[styles.videolist]}
+        {saved.length != 0 ? <FlatList horizontal={true} contentContainerStyle={{ alignItems: 'center', gap: 15, paddingHorizontal: 8 }} style={[styles.videolist]}
           data={saved}
           initialNumToRender={4}
           maxToRenderPerBatch={4}
           renderItem={({ item }: any) =>
-            item!==null?(<TouchableOpacity style={{height:150,backgroundColor:'rgba(165, 190, 252, 0.197)'}} onPress={() => { navigation.navigate('VideoPreview', { item }) }}>
+            item !== null ? (<TouchableOpacity style={{ height: 150, backgroundColor: 'rgba(165, 190, 252, 0.197)' }} onPress={() => { navigation.navigate('VideoPreview', { item }) }}>
               <YoutubeIframe
                 height={180}
                 width={250}
@@ -176,7 +235,7 @@ const Settings = () => {
                 play={false}
               />
               {/* <Text style={styles.videoTitle}>{item.title}</Text> */}
-            </TouchableOpacity>):null
+            </TouchableOpacity>) : null
           }
           keyExtractor={item => item}
         >
@@ -191,24 +250,24 @@ const Settings = () => {
           </View>
           <TouchableOpacity
             style={styles.headerbtns}
-            onPress={()=>{navigation.navigate('Courses')}}
+            onPress={() => { navigation.navigate('Courses') }}
           >
             <Text style={{ fontFamily: 'Inter_24pt-Regular', fontSize: 16, color: 'rgb(25,42,86)' }}>View all</Text>
             <Image style={styles.btnImg} source={require('../assets/expand.png')} />
           </TouchableOpacity>
         </View>
-        {courses.length != 0 ? <FlatList horizontal={true} contentContainerStyle={{ alignItems: 'center', gap: 15 }} style={[styles.videolist,{paddingHorizontal:10}]}
+        {courses.length != 0 ? <FlatList horizontal={true} contentContainerStyle={{ alignItems: 'center', gap: 15 }} style={[styles.videolist, { paddingHorizontal: 10 }]}
           data={courses}
           initialNumToRender={4}
           maxToRenderPerBatch={4}
           renderItem={({ item }: any) =>
 
-            item!==null?(<TouchableOpacity key={item.playlistId} style={styles.coursecontainer} onPress={() => { navigation.navigate('Courses', item); }}>
+            item !== null ? (<TouchableOpacity key={item.playlistId} style={styles.coursecontainer} onPress={() => { navigation.navigate('Courses', item); }}>
               <View style={styles.coursecontainer}>
                 {/* <Text>{item.thumbnails}</Text> */}
-                <Image style={{ width: '100%', height: '100%' }} source={{ uri: item.thumbnails }} resizeMode='contain'></Image>  
+                <Image style={{ width: '100%', height: '100%' }} source={{ uri: item.thumbnails }} resizeMode='contain'></Image>
               </View>
-            </TouchableOpacity>):null
+            </TouchableOpacity>) : null
           }
           keyExtractor={item => item}
         >
@@ -293,8 +352,8 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    textAlign:'center',
-    textAlignVertical:'center'
+    textAlign: 'center',
+    textAlignVertical: 'center'
   },
   headertxt: {
     color: 'rgb(25,42,86)',
