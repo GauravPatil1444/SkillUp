@@ -2,7 +2,6 @@ fastapi
 uvicorn 
 pandas
 numpy
-spacy
 scikit-learn
 youtube-transcript-api 
 google-generativeai 

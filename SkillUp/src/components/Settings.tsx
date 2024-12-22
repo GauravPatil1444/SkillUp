@@ -8,6 +8,7 @@ import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
 import EncryptedStorage4 from 'react-native-encrypted-storage'
 import { collection, getDocs, updateDoc, doc, addDoc } from 'firebase/firestore'
 import { db } from '../../firebaseConfig'
+const JSON5 = require('json5');
 
 const Settings = () => {
 
@@ -42,26 +43,36 @@ const Settings = () => {
     }
     // const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
     // RNFS.unlink(path)
-    try {
-      let mixed: any;
-      const filepath = RNFS.DocumentDirectoryPath + '/shuffled.txt';
-      mixed = await RNFS.readFile(filepath, 'utf8');
-      try {
-        const docRef = collection(db, "users", `${uid}/recommendations`);
-        const docSnap = await getDocs(docRef);
-        const document = doc(db, "users", `${uid}`, "recommendations", docSnap.docs[0].id);
-        const obj = JSON.stringify({"recommendations":mixed})
-        await updateDoc(document, JSON.parse(obj));
-      }
-      catch (e) {
-        console.log(e);
-        const obj = JSON.stringify({"recommendations":mixed})
-        await addDoc(collection(db, "users", `${uid}/recommendations`), JSON.parse(obj));
-      }
-    }
-    catch (e) {
-      console.log(e);
-    }
+    // try {
+    //   let mixed: any;
+    //   const filepath = RNFS.DocumentDirectoryPath + '/shuffled.txt';
+    //   mixed = await RNFS.readFile(filepath, 'utf8');
+    //   try {
+    //     const docRef = collection(db, "users", `${uid}/recommendations`);
+    //     const docSnap = await getDocs(docRef);
+    //     const document = doc(db, "users", `${uid}`, "recommendations", docSnap.docs[0].id);
+    //     mixed = await JSON5.parse(mixed);
+    //     // console.log(typeof(mixed),mixed);
+    //     const obj = {
+    //       "recommendations" : mixed
+    //     }
+    //     // console.log(typeof(obj),obj)
+    //     await updateDoc(document,obj);
+    //   }
+    //   catch (e) {
+    //     console.log(e);
+    //     // const obj = JSON.stringify({"recommendations":mixed})
+    //     mixed = await JSON5.parse(mixed);
+    //     // console.log(typeof(mixed),mixed);
+    //     const obj = {
+    //       "recommendations" : mixed
+    //     }
+    //     await addDoc(collection(db, "users", `${uid}/recommendations`), obj);
+    //   }
+    // }
+    // catch (e) {
+    //   console.log(e);
+    // }
     try {
       const res = await ReactNativeAsyncStorage.getItem("isLoggedIn")
       if (res === "true") {

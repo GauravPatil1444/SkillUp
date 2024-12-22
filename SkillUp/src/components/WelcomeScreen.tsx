@@ -7,7 +7,7 @@ import { useFocusEffect } from '@react-navigation/native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { StackParamList, TabParamList } from '../App'
 import { firebase_auth } from '../../firebaseConfig'
-import { collection, getDocs, updateDoc, doc, addDoc } from 'firebase/firestore'
+import { collection, getDocs, updateDoc, doc } from 'firebase/firestore'
 import { db } from '../../firebaseConfig'
 import EncryptedStorage4 from 'react-native-encrypted-storage'
 import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
@@ -70,7 +70,7 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
 
   const fetchdata = async () => {
     try {
-      console.log("staring 1");
+      console.log("starting 1");
 
       const RNFS = require('react-native-fs');
       const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
@@ -88,7 +88,7 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
       settopics(topics["topics"]);
     }
     catch (e) {
-      console.log("staring 2", e);
+      console.log("starting 2", e);
       const RNFS = require('react-native-fs');
       // firebase_auth.onAuthStateChanged( async (user)=>{
 
@@ -204,11 +204,11 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
         }
       })
     }
-    if(topics["topics"].length>=20){
+    if (topics["topics"].length >= 20) {
       topics["topics"].splice(0, 0, searchQuery)
-      topics["topics"].splice(19,1);
+      topics["topics"].splice(19, 1);
     }
-    else{
+    else {
       await topics["topics"].splice(0, 0, searchQuery);
     }
 
@@ -224,15 +224,15 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
   }
 
   const Recommendation = async () => {
-    try{
+    try {
       const path = RNFS.DocumentDirectoryPath + '/recommended.txt';
       let recommended = await RNFS.readFile(path, 'utf8');
       const path1 = RNFS.DocumentDirectoryPath + '/metadata.txt';
       let metadata = await RNFS.readFile(path1, 'utf8');
-      
+
       recommended = await JSON5.parse(recommended);
-      console.log("Recommended",recommended);
-      
+      // console.log("Recommended",recommended);
+
       metadata = await JSON.parse(metadata);
 
       let shuffleArray = (arr: any) => {
@@ -255,37 +255,19 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
 
       let mixed = await shuffleArray(recommended.concat(filteredshuffled1))
       mixed = await mixed.concat(filteredshuffled.slice(25, 40));
-      console.log("mixed");
+      // console.log("mixed");
 
       setmetadata(mixed);
       setloader(false);
       setmetadataAvail(true);
-    
-      try{
-        const docRef = collection(db, "users",`${uid}/recommendations`);
-        const docSnap = await getDocs(docRef);
-        const document = doc(db, "users", `${uid}`, "recommendations", docSnap.docs[0].id);
-        await updateDoc(document,mixed);
-      }
-      catch{
-        await addDoc(collection(db, "users", `${uid}/recommendations`), mixed);
-      }
+
       const filepath = RNFS.DocumentDirectoryPath + '/shuffled.txt';
       await RNFS.writeFile(filepath, JSON.stringify(mixed), 'utf8')
     }
     catch (e) {
       // console.log(e);
-      try {
-        const docRef = collection(db, "users", `${uid}/recommendations`);
-        const docSnap = await getDocs(docRef);
-        const document = docSnap.docs[0].data();
-        const data: any = JSON.stringify(document["recommendations"]);
-        setmetadata(data);
-      }
-      catch(e) {
-        console.log(e);
-        setloader(false);
-      }
+      console.log(e);
+      setloader(false);
     }
   }
 

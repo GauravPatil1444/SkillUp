@@ -2,8 +2,8 @@ import json
 import json5
 import pandas as pd
 import numpy as np
-import spacy
-import string
+# import spacy
+# import string
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import linear_kernel
 
@@ -12,21 +12,21 @@ def recommender(id,data):
     df = pd.json_normalize(data)
     data = pd.DataFrame(df[['videoID','title']])    
     # nlp = spacy.load(r'C:\Users\patil\AppData\Roaming\Python\Python311\site-packages\en_core_web_sm\en_core_web_sm-3.7.1')
-    nlp = spacy.load('en_core_web_sm')
+    # nlp = spacy.load('en_core_web_sm')
 
-    def preprocess(text):
-        exclude = string.punctuation
-        result = []
-        text = text.translate(str.maketrans('','',exclude))
-        for token in nlp(text):
-            if token.pos_ not in {'NUM', 'ADP', 'CCONJ', 'PUNCT', 'SYM', 'X'} and token.text.lower() not in {'a','is','tutorial','beginners'}:
-                result.append(token.text)
-        return ' '.join(result)        
+    # def preprocess(text):
+    #     exclude = string.punctuation
+    #     result = []
+    #     text = text.translate(str.maketrans('','',exclude))
+    #     for token in nlp(text):
+    #         if token.pos_ not in {'NUM', 'ADP', 'CCONJ', 'PUNCT', 'SYM', 'X'} and token.text.lower() not in {'a','is','tutorial','beginners'}:
+    #             result.append(token.text)
+    #     return ' '.join(result)        
 
-    data['preprocess_title'] = data.title.apply(preprocess)
+    # data['preprocess_title'] = data.title.apply(preprocess)
     
     tfidf = TfidfVectorizer()
-    vec_matrix = tfidf.fit_transform(data.preprocess_title) 
+    vec_matrix = tfidf.fit_transform(data.title) 
     data['vec_data'] = list(vec_matrix.toarray())
     
     X = np.array(data['vec_data'].tolist())
