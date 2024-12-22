@@ -82,9 +82,9 @@ const VideoList = ({route}:TabProps) => {
     }
   }, [route.params])
   
-  useEffect(() => {
-    myVideos();
-  }, [])
+  // useEffect(() => {
+  //   myVideos();
+  // }, [])
 
 
   return (

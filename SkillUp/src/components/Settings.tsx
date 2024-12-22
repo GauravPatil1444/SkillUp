@@ -19,12 +19,10 @@ const Settings = () => {
   const [history, sethistory] = useState<any>({})
   const [saved, setsaved] = useState<any>({})
   const [courses, setcourses] = useState<any>({})
-  const [count, setcount] = useState(1)
   const [uid, setuid] = useState()
   // const [metadata, setmetadata] = useState<videometadata[]>([])
 
   const metadata = ['UmnCZ7-9yDY', 'GwIo3gDZCVQ', 'A74TOX803D0', 'xk4_1vDrzzo', 'ntLJmHOJ0ME', 'Pj0neYUp9Tc', 'dz458ZkBMak', 'eIrMbAQSU34', 'gJ9DYC-jswo', 't8pPdKYpowI']
-
 
   const handleSignout = async () => {
     const RNFS = require('react-native-fs');
@@ -44,22 +42,24 @@ const Settings = () => {
     }
     // const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
     // RNFS.unlink(path)
-    try{
-      let mixed:any;
+    try {
+      let mixed: any;
       const filepath = RNFS.DocumentDirectoryPath + '/shuffled.txt';
       mixed = await RNFS.readFile(filepath, 'utf8');
-      try{
-        const docRef = collection(db, "users",`${uid}/recommendations`);
+      try {
+        const docRef = collection(db, "users", `${uid}/recommendations`);
         const docSnap = await getDocs(docRef);
         const document = doc(db, "users", `${uid}`, "recommendations", docSnap.docs[0].id);
-        await updateDoc(document,JSON.parse(mixed));
+        const obj = JSON.stringify({"recommendations":mixed})
+        await updateDoc(document, JSON.parse(obj));
       }
-      catch(e){
+      catch (e) {
         console.log(e);
-        await addDoc(collection(db, "users", `${uid}/recommendations`), JSON.parse(mixed));
+        const obj = JSON.stringify({"recommendations":mixed})
+        await addDoc(collection(db, "users", `${uid}/recommendations`), JSON.parse(obj));
       }
     }
-    catch(e){
+    catch (e) {
       console.log(e);
     }
     try {
@@ -111,14 +111,21 @@ const Settings = () => {
   }
 
   const signOutviaLogo = () => {
-    if (count == 2) {
-      setcount(1);
-      handleSignout();
-    }
-    else {
-      setcount(2);
-      Alert.alert("Press again to Sign out");
-    }
+    Alert.alert(
+      "Do you want to Sign out ?",
+      "",
+      [
+        {
+          text: 'No',
+          style: 'cancel',
+        },
+        {
+          text: 'Yes',
+          onPress: () => handleSignout(),
+          style: 'default',
+        }
+      ]
+    )
   }
 
   useFocusEffect(
@@ -130,22 +137,22 @@ const Settings = () => {
   );
 
   useEffect(() => {
-    const getuid = async()=>{
-      
+    const getuid = async () => {
+
       let status = false;
-      try{
+      try {
         const res = await ReactNativeAsyncStorage.getItem("isLoggedIn")
-        if(res==="true"){
-          const uid:any = await EncryptedStorage4.getItem("uid")
+        if (res === "true") {
+          const uid: any = await EncryptedStorage4.getItem("uid")
           setuid(uid)
           status = true;
           // console.log("true",uid);
         }
       }
-      catch{
+      catch {
       }
-      if(status === false){
-        let id:any = firebase_auth.currentUser?.uid;
+      if (status === false) {
+        let id: any = firebase_auth.currentUser?.uid;
         setuid(id)
       }
     }

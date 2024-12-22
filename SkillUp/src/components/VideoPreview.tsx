@@ -10,6 +10,8 @@ import { firebase_auth } from '../../firebaseConfig'
 import { YoutubeTranscript } from 'youtube-transcript';
 import EncryptedStorage4 from 'react-native-encrypted-storage'
 import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
+import Toast from 'react-native-toast-message'
+
 // import { TabParamList } from '../App'
 
 type StackVideoProps = NativeStackScreenProps<StackParamList, 'VideoPreview'>
@@ -33,10 +35,11 @@ const VideoPreview = ({ route }: StackVideoProps) => {
   const [queattempted, setqueattempted] = useState(0)
   const [count, setcount] = useState(0)
   const [visited, setvisited] = useState<number[]>([])
-  const [pressCount, setpressCount] = useState(1)
+  // const [pressCount, setpressCount] = useState(1)
   const [quizView, setquizView] = useState(false)
   const [update, setupdate] = useState(false)
   const [uid, setuid] = useState()
+  const JSON5 = require('json5');
 
   const writedata = async (currentID:string)=>{
     const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
@@ -48,7 +51,13 @@ const VideoPreview = ({ route }: StackVideoProps) => {
         user_preferences["history"].splice(index,1);
       }
     })
-    user_preferences["history"].splice(0,0,item);
+    if(user_preferences["history"].length>=30){
+      user_preferences["history"].splice(0,0,item);
+      user_preferences["history"].splice(29,1);
+    }
+    else{
+      user_preferences["history"].splice(0,0,item);
+    }
     await RNFS.writeFile(path, JSON.stringify(user_preferences), 'utf8')
     setupdate(!update);
   }
@@ -73,10 +82,11 @@ const VideoPreview = ({ route }: StackVideoProps) => {
       user_preferences["saved"].splice(0,0,item);
       await RNFS.writeFile(path, JSON.stringify(user_preferences), 'utf8')
       setupdate(!update);
-      Alert.alert("Video saved !");
+      // Alert.alert("Video saved !");
+      showToast("success","Video saved !");
     }
     else{
-      if(pressCount==2){
+      const removeVideo = async()=>{
         let index = 0;
         const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
         const file = await RNFS.readFile(path, 'utf8');
@@ -87,14 +97,30 @@ const VideoPreview = ({ route }: StackVideoProps) => {
           }
         })
         user_preferences["saved"].splice(index, 1); 
-        setpressCount(1);
         await RNFS.writeFile(path, JSON.stringify(user_preferences), 'utf8')
-        Alert.alert("Video removed !");
+        // Alert.alert("Video removed !");
+        showToast("success","Video removed !");
       }
-      else{ 
-        Alert.alert("Already saved !, click again to remove");
-        setpressCount(2);
-      }
+      Alert.alert(
+        "Already saved !",
+        "Do you want to remove it ?",
+        [
+          {
+            text: 'No',
+            style: 'cancel',
+          },
+          {
+            text: 'Yes',
+            onPress: () => removeVideo(),
+            style: 'default',
+          }
+        ]
+      )
+      // else{ 
+        // Alert.alert("Already saved !, click again to remove");
+        // showToast("info","Already saved !, click again to remove");
+        // setpressCount(2);
+      // }
     }
   }
 
@@ -111,7 +137,7 @@ const VideoPreview = ({ route }: StackVideoProps) => {
       // console.log(txtlist);
       const transrc = txtlist.join(' ');
       
-      const res = await fetch('https://skillup-505952169629.us-central1.run.app/transcript',
+      const res = await fetch('https://skillup-505952169629.asia-south1.run.app/transcript',
         {
           method: 'POST',
           headers:{
@@ -136,7 +162,8 @@ const VideoPreview = ({ route }: StackVideoProps) => {
     }
     catch (error) {
       console.log(error);
-      Alert.alert('Something went wrong !');
+      // Alert.alert('Something went wrong !');
+      showToast("error","Something went wrong !");
       setloader(false);
     }
   }
@@ -176,18 +203,18 @@ const VideoPreview = ({ route }: StackVideoProps) => {
       await RNFS.writeFile(path, JSON.stringify(fileData), 'utf8');
       console.log("count updated", fileData["count"]);
   
-      if (fileData["count"] == 3) {
+      if (fileData["count"] == 2) {
         await RNFS.writeFile(path, JSON.stringify(fileData), 'utf8');
         const path1 = RNFS.DocumentDirectoryPath + '/metadata.txt';
         const result = await RNFS.readFile(path1, 'utf8');
         const metadata = JSON.parse(result);
         // console.log(metadata);
-        if(metadata["metadata"].length>=90){
+        if(metadata["metadata"].length>=80){
+          console.log("Engine call");
           const recommendations:any = await EngineCall(currentID,metadata["metadata"]);
-          const data = await JSON.parse(recommendations);
-          // console.log(data["result"]);
+          // console.log(recommendations["result"],typeof(recommendations));
           const path2 = RNFS.DocumentDirectoryPath + '/recommended.txt';
-          await RNFS.writeFile(path2,JSON.stringify({"result":data["result"]}),'utf8');
+          await RNFS.writeFile(path2,JSON5.stringify(recommendations["result"]),'utf8');
           console.log("recommended file written");
         }
         else{
@@ -202,7 +229,7 @@ const VideoPreview = ({ route }: StackVideoProps) => {
 
   const EngineCall = async (currentID:string,metadata:any)=>{
     console.log(200);
-    const response = await fetch('https://a705-202-160-145-172.ngrok-free.app/recommender',
+    const response = await fetch('https://skillup-505952169629.asia-south1.run.app/recommender',
       {
         method: 'POST',
         headers:{
@@ -213,9 +240,18 @@ const VideoPreview = ({ route }: StackVideoProps) => {
       }
     )
     const data = await response.json()
+    console.log("success");
     return data;
   }
   
+  const showToast = (type:string,message:string) => {
+    Toast.show({
+      type: type,
+      text1: message,
+      text1Style:{fontFamily:'Inter_24pt-Regular',color:'rgb(25,42,86)',fontSize:18},
+      visibilityTime:4000,  
+    });
+  }
 
   useEffect(() => {
     const startup = async ()=>{

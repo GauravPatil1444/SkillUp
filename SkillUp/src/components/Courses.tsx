@@ -8,12 +8,13 @@ import { TabParamList } from '../App'
 import { collection, updateDoc, doc, getDocs } from 'firebase/firestore'
 import { db } from '../../firebaseConfig'
 import { firebase_auth } from '../../firebaseConfig'
+import Toast from 'react-native-toast-message'
 
 type TabProps = NativeStackScreenProps<TabParamList, 'Courses'>
 
-const Courses = ({route}:TabProps) => {
+const Courses = ({ route }: TabProps) => {
 
-  const navigation = useNavigation<string|any>();
+  const navigation = useNavigation<string | any>();
 
   interface coursemetadata {
     channelTitle: string,
@@ -40,9 +41,9 @@ const Courses = ({route}:TabProps) => {
   const [update, setupdate] = useState(false)
   const [mycoursesview, setmycoursesview] = useState(false)
   const [NoCourse, setNoCourse] = useState(false)
-  let backupMetadata:any = []
+  let backupMetadata: any = []
 
-  const RNFS = require('react-native-fs'); 
+  const RNFS = require('react-native-fs');
 
   useFocusEffect(
     useCallback(() => {
@@ -55,17 +56,17 @@ const Courses = ({route}:TabProps) => {
         StatusBar.setBarStyle('dark-content');
       }
       mycourses();
-    }, [,viewcourse])
+    }, [, viewcourse])
   );
 
   useEffect(() => {
     setcoursevideolist([]);
-    const item:any = route.params;
-    console.log("Route",item);
+    const item: any = route.params;
+    console.log("Route", item);
     opencourse(item);
   }, [route.params])
 
-  useEffect(()=> {
+  useEffect(() => {
     updateData();
   }, [update])
 
@@ -74,7 +75,7 @@ const Courses = ({route}:TabProps) => {
     setNoCourse(false);
     setmetadata([])
     try {
-      const searchresult = await fetch('https://skillup-505952169629.us-central1.run.app/fetchcourses',
+      const searchresult = await fetch('https://skillup-505952169629.asia-south1.run.app/fetchcourses',
         {
           method: 'post',
           headers: {
@@ -105,30 +106,30 @@ const Courses = ({route}:TabProps) => {
   const opencourse = async (item: any) => {
     let query = '';
     console.log(item);
-    if(item['playlistId']===undefined){
+    if (item['playlistId'] === undefined) {
       query = item[0];
       checkEnroll(query);
-      console.log(2,query);
+      console.log(2, query);
     }
-    else{
+    else {
       query = item['playlistId'];
       checkEnroll(query);
-      console.log(1,query);
-      item  = [item.playlistId,item.channelTitle,item.description,item.title,item.thumbnails]
+      console.log(1, query);
+      item = [item.playlistId, item.channelTitle, item.description, item.title, item.thumbnails]
     }
     setcoursevideolist([]);
     setcourseMetadata(item);
     backupMetadata = item;
     setloader(true);
 
-    const fetchvideos = await fetch('https://skillup-505952169629.us-central1.run.app/fetchcoursevideos',
+    const fetchvideos = await fetch('https://skillup-505952169629.asia-south1.run.app/fetchcoursevideos',
       {
         method: 'post',
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ "q": query})
+        body: JSON.stringify({ "q": query })
       }
     );
     const result = await fetchvideos.json();
@@ -141,64 +142,76 @@ const Courses = ({route}:TabProps) => {
     setviewcourse(true);
   }
 
-  const checkEnroll = async(item:string)=>{
+  const checkEnroll = async (item: string) => {
     let flag = true;
     const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
     const file = await RNFS.readFile(path, 'utf8');
     let user_preferences = await JSON.parse(file);
     console.log(user_preferences);
-    await user_preferences["courses"].map((i:coursemetadata)=>{
-      console.log(i.playlistId,item);
-      
-      if(i.playlistId==item){
+    await user_preferences["courses"].map((i: coursemetadata) => {
+      console.log(i.playlistId, item);
+
+      if (i.playlistId == item) {
         flag = false;
       }
     })
-    if(!flag){
+    if (!flag) {
       setEnrolltxt('Enrolled');
     }
-    else{
+    else {
       setEnrolltxt('Enroll now !');
     }
   }
 
-  const Enroll = async(item:string[])=>{
-    if(Enrolltxt!="Enrolled"){
+  const Enroll = async (item: string[]) => {
+    if (Enrolltxt != "Enrolled") {
       const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
-      let setitem = {"playlistId" : item[0], "channelTitle" : item[1], "description" : item[2], "title" : item[3], "thumbnails" : item[4]}
+      let setitem = { "playlistId": item[0], "channelTitle": item[1], "description": item[2], "title": item[3], "thumbnails": item[4] }
       const file = await RNFS.readFile(path, 'utf8');
       let user_preferences = await JSON.parse(file);
-      user_preferences["courses"].splice(0,0,setitem);
+      user_preferences["courses"].splice(0, 0, setitem);
       await RNFS.writeFile(path, JSON.stringify(user_preferences), 'utf8')
       setEnrolltxt('Enrolled')
       setupdate(!update);
+      showToast("success", "Course Enrolled !");
     }
-    else{
-      if(pressCount==2){
-        
+    else {
+      const removeCourse = async () => {
         let index = 0;
         const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
         const file = await RNFS.readFile(path, 'utf8');
         let user_preferences = await JSON.parse(file);
         // console.log(user_preferences['courses']);
-        await user_preferences["courses"].map((course:coursemetadata,i:number)=>{          
-          if(course.playlistId===item[0]){
+        await user_preferences["courses"].map((course: coursemetadata, i: number) => {
+          if (course.playlistId === item[0]) {
             index = i;
           }
         })
         // delete user_preferences["courses"][index];
-        user_preferences["courses"].splice(index, 1); 
+        user_preferences["courses"].splice(index, 1);
         setpressCount(1);
-        console.log("Deleted",index);
+        console.log("Deleted", index);
         await RNFS.writeFile(path, JSON.stringify(user_preferences), 'utf8')
         setEnrolltxt('Enroll now !');
         setupdate(!update);
+        showToast("success", "Course Exited !");
         navigation.navigate('Settings');
       }
-      else{
-        Alert.alert("Already enrolled, press again to exit the course");
-        setpressCount(2);
-      }
+      Alert.alert(
+        "Already Enrolled !",
+        "Do you want to remove it ?",
+        [
+          {
+            text: 'No',
+            style: 'cancel',
+          },
+          {
+            text: 'Yes',
+            onPress: () => removeCourse(),
+            style: 'default',
+          }
+        ]
+      )
     }
 
   }
@@ -240,17 +253,27 @@ const Courses = ({route}:TabProps) => {
   }
 
 
-  const updateData = async ()=>{
+  const updateData = async () => {
     const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
     const file = await RNFS.readFile(path, 'utf8');
     console.log(file);
     console.log(firebase_auth.currentUser?.uid);
-    const docRef = collection(db, "users",`${firebase_auth.currentUser?.uid}/UserPreferences`);
+    const docRef = collection(db, "users", `${firebase_auth.currentUser?.uid}/UserPreferences`);
     const docSnap = await getDocs(docRef);
     const docref = doc(db, "users", `${firebase_auth.currentUser?.uid}`, "UserPreferences", docSnap.docs[0].id);
-    await updateDoc(docref,JSON.parse(file));
+    await updateDoc(docref, JSON.parse(file));
     console.log("Document updated successful !", docSnap.docs[0].id);
   }
+
+  const showToast = (type: string, message: string) => {
+    Toast.show({
+      type: type,
+      text1: message,
+      text1Style: { fontFamily: 'Inter_24pt-Regular', color: 'rgb(25,42,86)', fontSize: 18 },
+      visibilityTime: 4000,
+    });
+  }
+
 
   return (
     <SafeAreaView style={styles.homecontainer}>
@@ -271,23 +294,23 @@ const Courses = ({route}:TabProps) => {
             onChangeText={setsearchinp}
             onSubmitEditing={search}
           />
-          <TouchableOpacity style={{justifyContent:'center'}} onPress={()=>{search()}}>
-            <Image style={styles.searchImg} source={require('../assets/search_dark.png')}/>
+          <TouchableOpacity style={{ justifyContent: 'center' }} onPress={() => { search() }}>
+            <Image style={styles.searchImg} source={require('../assets/search_dark.png')} />
           </TouchableOpacity>
         </View>
       </View>}
       {loader && <ActivityIndicator
-            animating={true}
-            color={'rgb(25,42,86)'}
-            size={Dimensions.get('window').width/8}
-          >  
-          </ActivityIndicator>
+        animating={true}
+        color={'rgb(25,42,86)'}
+        size={Dimensions.get('window').width / 8}
+      >
+      </ActivityIndicator>
       }
       {!loader && !viewcourse && <View style={styles.list_videos}>
-        {mycoursesview?<View style={{alignItems:'center'}}>
-          <Text style={{color:'rgb(25,42,86)',fontFamily:'Inter_24pt-Regular',fontSize:25}}>My courses</Text>
-        </View>:NoCourse&&<View style={[{alignItems:'center',justifyContent:'center',height:'50%'}]}>
-          <Text style={{color:'rgb(25,42,86)',fontFamily:'Inter_24pt-Regular',fontSize:25}}>No Courses Saved</Text>
+        {mycoursesview ? <View style={{ alignItems: 'center' }}>
+          <Text style={{ color: 'rgb(25,42,86)', fontFamily: 'Inter_24pt-Regular', fontSize: 25 }}>My courses</Text>
+        </View> : NoCourse && <View style={[{ alignItems: 'center', justifyContent: 'center', height: '50%' }]}>
+          <Text style={{ color: 'rgb(25,42,86)', fontFamily: 'Inter_24pt-Regular', fontSize: 25 }}>No Courses Saved</Text>
         </View>}
         <FlatList contentContainerStyle={{ alignItems: 'center' }} style={[styles.rec_videos]}
           data={metadata}
@@ -313,22 +336,22 @@ const Courses = ({route}:TabProps) => {
           <Text style={styles.channelname}>{courseMetadata[1]}</Text>
           <Text style={styles.channeldescription}>{courseMetadata[2]}</Text>
           <View style={styles.btnSpace}>
-            <TouchableOpacity style={styles.btns} onPress={()=>setviewcourse(false)}>
+            <TouchableOpacity style={styles.btns} onPress={() => setviewcourse(false)}>
               <Text style={{ fontFamily: 'Inter_24pt-Regular', color: '#FBFCF8' }}>Go back</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.btns} onPress={()=>Enroll(courseMetadata)}>
+            <TouchableOpacity style={styles.btns} onPress={() => Enroll(courseMetadata)}>
               <Text style={{ fontFamily: 'Inter_24pt-Regular', color: '#FBFCF8' }}>{Enrolltxt}</Text>
             </TouchableOpacity>
           </View>
         </View>
-  
+
         <View style={styles.list_courseVideos}>
           <FlatList contentContainerStyle={{ alignItems: 'center' }} style={[styles.rec_videos]}
             data={coursevideolist}
             initialNumToRender={2}
             maxToRenderPerBatch={2}
             renderItem={({ item }) =>
-              <TouchableOpacity key={item.videoID} style={styles.videocontainer} onPress={() => { navigation.navigate('VideoPreview',{item}) }}>
+              <TouchableOpacity key={item.videoID} style={styles.videocontainer} onPress={() => { navigation.navigate('VideoPreview', { item }) }}>
                 <View style={styles.courseBanner}>
                   <YoutubeIframe
                     height={200}
@@ -354,23 +377,23 @@ const Courses = ({route}:TabProps) => {
 export default Courses
 
 const styles = StyleSheet.create({
-  searchImg:{
-    position:'absolute',
+  searchImg: {
+    position: 'absolute',
     right: 10,
     height: 20,
     width: 20,
   },
-  btnSpace:{
-    width:'100%',
-    flexDirection:'row',
-    gap:15,
-    position:'absolute',
-    bottom:15,
-    justifyContent:'space-evenly'
+  btnSpace: {
+    width: '100%',
+    flexDirection: 'row',
+    gap: 15,
+    position: 'absolute',
+    bottom: 15,
+    justifyContent: 'space-evenly'
   },
-  list_courseVideos:{
-    position:'absolute',
-    top:'34%',
+  list_courseVideos: {
+    position: 'absolute',
+    top: '34%',
     width: '100%',
     height: '65%',
     backgroundColor: '#FBFCF8',
@@ -414,9 +437,9 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '35%',
     backgroundColor: 'rgb(25,42,86)',
-    alignItems:'center',
-    gap:5,
-    elevation:3
+    alignItems: 'center',
+    gap: 5,
+    elevation: 3
     // borderBottomRightRadius:30,
     // borderBottomLeftRadius:30,
   },

@@ -6,8 +6,10 @@ import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnable
 import com.facebook.react.defaults.DefaultReactActivityDelegate
 import android.os.Bundle;
 import android.view.View;
+import org.devio.rn.splashscreen.SplashScreen;
 
 class MainActivity : ReactActivity() {
+
 
   /**
    * Returns the name of the main component registered from JavaScript. This is used to schedule
@@ -23,6 +25,8 @@ class MainActivity : ReactActivity() {
       DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
 
   override fun onCreate(savedInstanceState: Bundle?) {
+    SplashScreen.show(this)
+    window.statusBarColor = resources.getColor(R.color.status_bar_color, theme)
     super.onCreate(savedInstanceState)
     hideNavigationBar()
   }

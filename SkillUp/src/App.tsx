@@ -8,6 +8,9 @@ import Settings from './components/Settings';
 import { Image, StyleSheet, TouchableOpacity } from 'react-native';
 import Courses from './components/Courses';
 import Authentication from './components/Authentication';
+import Toast from 'react-native-toast-message';
+import { useEffect } from 'react';
+import SplashScreen from 'react-native-splash-screen';
 
 export type StackParamList = {
   WelcomeScreen: undefined;
@@ -80,6 +83,10 @@ const StackNavigation = () => {
 const App = () => {
 
   const screens = ["home","videos","courses","Settings"]
+  
+  useEffect(() => {
+    SplashScreen.hide();
+  }, [])
 
   return (
     <NavigationContainer>
@@ -148,6 +155,7 @@ const App = () => {
           }}
         />
       </tab.Navigator>
+      <Toast/>
     </NavigationContainer>
 
 

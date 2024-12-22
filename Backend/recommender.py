@@ -1,4 +1,5 @@
 import json
+import json5
 import pandas as pd
 import numpy as np
 import spacy
@@ -10,8 +11,8 @@ def recommender(id,data):
 
     df = pd.json_normalize(data)
     data = pd.DataFrame(df[['videoID','title']])    
-    nlp = spacy.load(r'C:\Users\patil\AppData\Roaming\Python\Python311\site-packages\en_core_web_sm\en_core_web_sm-3.7.1')
-    # nlp = spacy.load('en_core_web_sm')
+    # nlp = spacy.load(r'C:\Users\patil\AppData\Roaming\Python\Python311\site-packages\en_core_web_sm\en_core_web_sm-3.7.1')
+    nlp = spacy.load('en_core_web_sm')
 
     def preprocess(text):
         exclude = string.punctuation
@@ -43,8 +44,9 @@ def recommender(id,data):
         result = list()
         for i in range(len(ID)):
             result.append({"videoID":ID[i],"title":title[i]})
-        return result
+        
+        return json.dumps({"message": "Got recommendations !","result" : result})
 
     # get_recommendations('BGTx91t8q50')
 
-    return json.dumps({"message": "Got recommendations !","result" : get_recommendations(id)})
+    return json5.loads(get_recommendations(id))

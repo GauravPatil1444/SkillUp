@@ -11,6 +11,7 @@ import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import auth from '@react-native-firebase/auth';
 import EncryptedStorage4 from 'react-native-encrypted-storage'
 import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
+import RNRestart from 'react-native-restart';
 
 GoogleSignin.configure({
     webClientId: '505952169629-76425nc7a2qncr7sipr8mbuusguu2r8e.apps.googleusercontent.com',
@@ -112,7 +113,9 @@ const Login = ({ navigation }: TabProps) => {
             await auth().signInWithCredential(googleCredential);
             ReactNativeAsyncStorage.setItem("isLoggedIn", "true");
             EncryptedStorage4.setItem("uid", uid)
-            navigation.navigate('StackNavigation')
+            
+            RNRestart.restart();
+            // navigation.navigate('StackNavigation')
         }
         catch (e) {
             console.log(e);
@@ -156,8 +159,8 @@ const Login = ({ navigation }: TabProps) => {
                     console.log("Document written with ID: ", docRef2.id);
                     const path1 = RNFS.DocumentDirectoryPath + '/topics.txt';
                     await RNFS.writeFile(path1, JSON.stringify(topics), 'utf8')
-
-                    navigation.navigate('StackNavigation')
+                    RNRestart.restart();
+                    // navigation.navigate('StackNavigation')
                 }
                 catch (error: any) {
                     const message = error.message;
@@ -191,8 +194,9 @@ const Login = ({ navigation }: TabProps) => {
             await RNFS.writeFile(path, JSON.stringify(docSnap.docs[0].data()), 'utf8')
             const path1 = RNFS.DocumentDirectoryPath + '/topics.txt';
             await RNFS.writeFile(path1, JSON.stringify(docSnap1.docs[0].data()), 'utf8')
-
-            navigation.navigate('StackNavigation');
+            
+            RNRestart.restart();
+            // navigation.navigate('StackNavigation');
         }
         catch (e: any) {
             Alert.alert("Invalid email or password !");
