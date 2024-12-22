@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, StatusBar, TextInput, KeyboardAvoidingView, Alert, ActivityIndicator } from 'react-native'
 import { useFocusEffect } from '@react-navigation/native'
-import React, { useCallback, useState, useEffect } from 'react'
+import React, { useCallback, useState } from 'react'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { TabParamList } from '../App'
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
@@ -12,6 +12,7 @@ import auth from '@react-native-firebase/auth';
 import EncryptedStorage4 from 'react-native-encrypted-storage'
 import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
 import RNRestart from 'react-native-restart';
+import Toast from 'react-native-toast-message'
 
 GoogleSignin.configure({
     webClientId: '505952169629-76425nc7a2qncr7sipr8mbuusguu2r8e.apps.googleusercontent.com',
@@ -64,7 +65,7 @@ const Login = ({ navigation }: TabProps) => {
             const email = signInResult.data.user.email;
 
             const googleCredential = auth.GoogleAuthProvider.credential(idToken);
-            console.log(googleCredential);
+            // console.log(googleCredential);
 
             try {
                 const docRef = collection(db, "users", `${uid}/UserPreferences`);
@@ -79,7 +80,7 @@ const Login = ({ navigation }: TabProps) => {
                 const path1 = RNFS.DocumentDirectoryPath + '/topics.txt';
                 await RNFS.writeFile(path1, JSON.stringify(docSnap1.docs[0].data()), 'utf8')
             } catch (error) {
-                console.log(error);
+                // console.log(error);
                 const docRef = await addDoc(collection(db, "users", `${uid}/UserDetails`), {
                     name: name,
                     email: email,
@@ -99,12 +100,12 @@ const Login = ({ navigation }: TabProps) => {
                 }
 
                 const docRef1 = await addDoc(collection(db, "users", `${uid}/UserPreferences`), user_preferences);
-                console.log("Document written with ID: ", docRef1.id);
+                // console.log("Document written with ID: ", docRef1.id);
                 const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
                 await RNFS.writeFile(path, JSON.stringify(user_preferences), 'utf8')
 
                 const docRef2 = await addDoc(collection(db, "users", `${uid}/topics`), topics);
-                console.log("Document written with ID: ", docRef2.id);
+                // console.log("Document written with ID: ", docRef2.id);
                 const path1 = RNFS.DocumentDirectoryPath + '/topics.txt';
                 await RNFS.writeFile(path1, JSON.stringify(topics), 'utf8')
 
@@ -118,7 +119,7 @@ const Login = ({ navigation }: TabProps) => {
             // navigation.navigate('StackNavigation')
         }
         catch (e) {
-            console.log(e);
+            // console.log(e);
         }
     }
 
@@ -126,7 +127,7 @@ const Login = ({ navigation }: TabProps) => {
     const createAccount = async () => {
         setloader(true);
         if (password == confirmpassword) {
-            if (password.length > 4) {
+            if (password.length >= 4) {
                 try {
                     const response = await createUserWithEmailAndPassword(firebase_auth, email, password)
                     const user_email = response.user.email;
@@ -151,12 +152,12 @@ const Login = ({ navigation }: TabProps) => {
                     }
 
                     const docRef1 = await addDoc(collection(db, "users", `${user_id}/UserPreferences`), user_preferences);
-                    console.log("Document written with ID: ", docRef1.id);
+                    // console.log("Document written with ID: ", docRef1.id);
                     const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
                     await RNFS.writeFile(path, JSON.stringify(user_preferences), 'utf8')
 
                     const docRef2 = await addDoc(collection(db, "users", `${user_id}/topics`), topics);
-                    console.log("Document written with ID: ", docRef2.id);
+                    // console.log("Document written with ID: ", docRef2.id);
                     const path1 = RNFS.DocumentDirectoryPath + '/topics.txt';
                     await RNFS.writeFile(path1, JSON.stringify(topics), 'utf8')
                     RNRestart.restart();
@@ -165,15 +166,18 @@ const Login = ({ navigation }: TabProps) => {
                 catch (error: any) {
                     const message = error.message;
                     Alert.alert(message);
+                    setloader(false);
                 };
             }
             else {
-                Alert.alert("Password length must be atleast 4");
+                // Alert.alert("Password length must be atleast 4");
+                showToast("error", "Password length must be atleast 4");
                 setloader(false);
             }
         }
         else {
-            Alert.alert("confirm password doesn't matched !");
+            // Alert.alert("confirm password doesn't matched !");
+            showToast("error", "confirm password doesn't matched !");
             setloader(false);
         }
     }
@@ -199,14 +203,16 @@ const Login = ({ navigation }: TabProps) => {
             // navigation.navigate('StackNavigation');
         }
         catch (e: any) {
-            Alert.alert("Invalid email or password !");
+            // Alert.alert("Invalid email or password !");
+            showToast("error", "Invalid email or password !");
             setloader(false);
         }
     }
 
     const handleName = (text: string) => {
         if (text.length > 20) {
-            Alert.alert("Only 20 charachters allowed");
+            // Alert.alert("Only 20 charachters allowed");
+            showToast("error", "Only 20 charachters allowed");
             setnameValid(false);
         }
         else {
@@ -216,12 +222,22 @@ const Login = ({ navigation }: TabProps) => {
 
     const handlePassword = (text: string) => {
         if (text.length > 15) {
-            Alert.alert("Password length between 4 to 15 is allowed");
+            // Alert.alert("Password length between 4 to 15 is allowed");
+            showToast("error", "Password length below 15 is allowed");
             setpassValid(false);
         }
         else {
             setpassValid(true);
         }
+    }
+
+    const showToast = (type: string, message: string) => {
+        Toast.show({
+          type: type,
+          text1: message,
+          text1Style: { fontFamily: 'Inter_24pt-Regular', color: 'rgb(25,42,86)', fontSize: 16 },
+          visibilityTime: 4000,
+        });
     }
 
 

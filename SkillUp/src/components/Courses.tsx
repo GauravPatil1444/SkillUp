@@ -62,7 +62,7 @@ const Courses = ({ route }: TabProps) => {
   useEffect(() => {
     setcoursevideolist([]);
     const item: any = route.params;
-    console.log("Route", item);
+    // console.log("Route", item);
     opencourse(item);
   }, [route.params])
 
@@ -98,23 +98,23 @@ const Courses = ({ route }: TabProps) => {
       setmycoursesview(false);
     }
     catch (error) {
-      console.log(error)
+      // console.log(error)
       Alert.alert('Something went wrong !');
     }
   }
 
   const opencourse = async (item: any) => {
     let query = '';
-    console.log(item);
+    // console.log(item);
     if (item['playlistId'] === undefined) {
       query = item[0];
       checkEnroll(query);
-      console.log(2, query);
+      // console.log(2, query);
     }
     else {
       query = item['playlistId'];
       checkEnroll(query);
-      console.log(1, query);
+      // console.log(1, query);
       item = [item.playlistId, item.channelTitle, item.description, item.title, item.thumbnails]
     }
     setcoursevideolist([]);
@@ -147,9 +147,9 @@ const Courses = ({ route }: TabProps) => {
     const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
     const file = await RNFS.readFile(path, 'utf8');
     let user_preferences = await JSON.parse(file);
-    console.log(user_preferences);
+    // console.log(user_preferences);
     await user_preferences["courses"].map((i: coursemetadata) => {
-      console.log(i.playlistId, item);
+      // console.log(i.playlistId, item);
 
       if (i.playlistId == item) {
         flag = false;
@@ -190,7 +190,7 @@ const Courses = ({ route }: TabProps) => {
         // delete user_preferences["courses"][index];
         user_preferences["courses"].splice(index, 1);
         setpressCount(1);
-        console.log("Deleted", index);
+        // console.log("Deleted", index);
         await RNFS.writeFile(path, JSON.stringify(user_preferences), 'utf8')
         setEnrolltxt('Enroll now !');
         setupdate(!update);
@@ -226,7 +226,7 @@ const Courses = ({ route }: TabProps) => {
       await user_preferences['courses'].map((item: coursemetadata) => {
         setmetadata(prevMetadata => [...prevMetadata, item]);
       })
-      console.log(user_preferences['courses']);
+      // console.log(user_preferences['courses']);
       setloader(false);
       setmycoursesview(true);
     }
@@ -245,7 +245,7 @@ const Courses = ({ route }: TabProps) => {
         }
       }
       catch {
-        console.log("Can't retrive documents");
+        // console.log("Can't retrive documents");
         setloader(false);
         setNoCourse(true);
       }
@@ -256,13 +256,13 @@ const Courses = ({ route }: TabProps) => {
   const updateData = async () => {
     const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
     const file = await RNFS.readFile(path, 'utf8');
-    console.log(file);
-    console.log(firebase_auth.currentUser?.uid);
+    // console.log(file);
+    // console.log(firebase_auth.currentUser?.uid);
     const docRef = collection(db, "users", `${firebase_auth.currentUser?.uid}/UserPreferences`);
     const docSnap = await getDocs(docRef);
     const docref = doc(db, "users", `${firebase_auth.currentUser?.uid}`, "UserPreferences", docSnap.docs[0].id);
     await updateDoc(docref, JSON.parse(file));
-    console.log("Document updated successful !", docSnap.docs[0].id);
+    // console.log("Document updated successful !", docSnap.docs[0].id);
   }
 
   const showToast = (type: string, message: string) => {

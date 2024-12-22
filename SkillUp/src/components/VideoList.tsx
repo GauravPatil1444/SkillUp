@@ -50,7 +50,7 @@ const VideoList = ({route}:TabProps) => {
         }
       }
       catch {
-        console.log("Can't retrive documents");
+        // console.log("Can't retrive documents");
         setmyvideosview(false);
       }
     }
@@ -74,7 +74,7 @@ const VideoList = ({route}:TabProps) => {
         setmetadata(route.params.metadata)
       }
       setmyvideosview(false);
-      console.log(metadata);
+      // console.log(metadata);
     }
     catch{
       myVideos();

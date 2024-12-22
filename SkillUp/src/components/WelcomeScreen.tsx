@@ -70,8 +70,7 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
 
   const fetchdata = async () => {
     try {
-      console.log("starting 1");
-
+      // console.log("starting 1");
       const RNFS = require('react-native-fs');
       const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
       const file = await RNFS.readFile(path, 'utf8');
@@ -88,7 +87,7 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
       settopics(topics["topics"]);
     }
     catch (e) {
-      console.log("starting 2", e);
+      // console.log("starting 2", e);
       const RNFS = require('react-native-fs');
       // firebase_auth.onAuthStateChanged( async (user)=>{
 
@@ -152,7 +151,7 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
       setloader(false)
     }
     catch (error) {
-      console.log(error)
+      // console.log(error)
       showToast("error", "Something went wrong !");
     }
   }
@@ -172,7 +171,7 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
     }
     const path = RNFS.DocumentDirectoryPath + '/RecommendationTracker.txt';
     await RNFS.writeFile(path, JSON.stringify(file), 'utf8')
-    console.log("Tracker file written");
+    // console.log("Tracker file written");
   }
 
   const writeFiles = async (currentFile: videometadata[], searchQuery: string) => {
@@ -182,7 +181,7 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
     try {
       let result = await RNFS.readFile(path1, 'utf8')
       metadata = await JSON.parse(result);
-      console.log(metadata);
+      // console.log(metadata);
     }
     catch {
       metadata = { "metadata": [] };
@@ -266,7 +265,7 @@ const WelcomeScreen = ({ navigation }: StackProps) => {
     }
     catch (e) {
       // console.log(e);
-      console.log(e);
+      // console.log(e);
       setloader(false);
     }
   }

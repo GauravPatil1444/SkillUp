@@ -6,15 +6,15 @@ import YoutubeIframe from 'react-native-youtube-iframe'
 import { useNavigation } from '@react-navigation/native';
 import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
 import EncryptedStorage4 from 'react-native-encrypted-storage'
-import { collection, getDocs, updateDoc, doc, addDoc } from 'firebase/firestore'
-import { db } from '../../firebaseConfig'
-const JSON5 = require('json5');
+// import { collection, getDocs, updateDoc, doc, addDoc } from 'firebase/firestore'
+// import { db } from '../../firebaseConfig'
+// const JSON5 = require('json5');
 
 const Settings = () => {
 
   const navigation = useNavigation<string | any>();
 
-  const [userData, setuserData] = useState<any>([])
+  // const [userData, setuserData] = useState<any>([])
   const [user, setuser] = useState('')
   const [email, setemail] = useState('')
   const [history, sethistory] = useState<any>({})
@@ -23,7 +23,7 @@ const Settings = () => {
   const [uid, setuid] = useState()
   // const [metadata, setmetadata] = useState<videometadata[]>([])
 
-  const metadata = ['UmnCZ7-9yDY', 'GwIo3gDZCVQ', 'A74TOX803D0', 'xk4_1vDrzzo', 'ntLJmHOJ0ME', 'Pj0neYUp9Tc', 'dz458ZkBMak', 'eIrMbAQSU34', 'gJ9DYC-jswo', 't8pPdKYpowI']
+  // const metadata = ['UmnCZ7-9yDY', 'GwIo3gDZCVQ', 'A74TOX803D0', 'xk4_1vDrzzo', 'ntLJmHOJ0ME', 'Pj0neYUp9Tc', 'dz458ZkBMak', 'eIrMbAQSU34', 'gJ9DYC-jswo', 't8pPdKYpowI']
 
   const handleSignout = async () => {
     const RNFS = require('react-native-fs');
@@ -95,27 +95,27 @@ const Settings = () => {
 
     setuser(() => {
       const newData = user_preferences['UserDetails']['name'];
-      console.log(JSON.stringify(newData));
+      // console.log(JSON.stringify(newData));
       return newData
     });
     setemail(() => {
       const newData = user_preferences['UserDetails']['email'];
-      console.log(JSON.stringify(newData));
+      // console.log(JSON.stringify(newData));
       return newData
     });
     sethistory(() => {
       const newData = user_preferences['history'];
-      console.log(JSON.stringify(newData));
+      // console.log(JSON.stringify(newData));
       return newData
     });
     setsaved(() => {
       let newData = user_preferences['saved'];
-      console.log(JSON.stringify(newData));
+      // console.log(JSON.stringify(newData));
       return newData
     });
     setcourses(() => {
       const newData = user_preferences['courses'];
-      console.log(JSON.stringify(newData));
+      // console.log(JSON.stringify(newData));
       return newData
     });
 

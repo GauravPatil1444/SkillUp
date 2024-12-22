@@ -75,7 +75,7 @@ const VideoPreview = ({ route }: StackVideoProps) => {
       }
     })
     if(!saved){
-      console.log(1,item.videoID);
+      // console.log(1,item.videoID);
       const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
       const file = await RNFS.readFile(path, 'utf8');
       let user_preferences = await JSON.parse(file);
@@ -161,7 +161,7 @@ const VideoPreview = ({ route }: StackVideoProps) => {
       setloader(false)
     }
     catch (error) {
-      console.log(error);
+      // console.log(error);
       // Alert.alert('Something went wrong !');
       showToast("error","Something went wrong !");
       setloader(false);
@@ -184,24 +184,24 @@ const VideoPreview = ({ route }: StackVideoProps) => {
     const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
     const file = await RNFS.readFile(path, 'utf8');
     // console.log(file);
-    console.log(uid);
+    // console.log(uid);
     const docRef = collection(db, "users",`${uid}/UserPreferences`);
     const docSnap = await getDocs(docRef);
     const docref = doc(db, "users", `${uid}`, "UserPreferences", docSnap.docs[0].id);
     await updateDoc(docref,JSON.parse(file));
-    console.log("Document updated successful !", docSnap.docs[0].id);
+    // console.log("Document updated successful !", docSnap.docs[0].id);
   }
 
   const RecommendationTracker = async (currentID: string) => {
     const path = RNFS.DocumentDirectoryPath + '/RecommendationTracker.txt';
     const file = await RNFS.readFile(path, 'utf8');
     let fileData = JSON.parse(file);
-    console.log(fileData);
+    // console.log(fileData);
     
     if (fileData["results"].includes(currentID)) {
       fileData["count"] += 1;
       await RNFS.writeFile(path, JSON.stringify(fileData), 'utf8');
-      console.log("count updated", fileData["count"]);
+      // console.log("count updated", fileData["count"]);
   
       if (fileData["count"] == 2) {
         await RNFS.writeFile(path, JSON.stringify(fileData), 'utf8');
@@ -210,25 +210,25 @@ const VideoPreview = ({ route }: StackVideoProps) => {
         const metadata = JSON.parse(result);
         // console.log(metadata);
         if(metadata["metadata"].length>=80){
-          console.log("Engine call");
+          // console.log("Engine call");
           const recommendations:any = await EngineCall(currentID,metadata["metadata"]);
           // console.log(recommendations["result"],typeof(recommendations));
           const path2 = RNFS.DocumentDirectoryPath + '/recommended.txt';
           await RNFS.writeFile(path2,JSON5.stringify(recommendations["result"]),'utf8');
-          console.log("recommended file written");
+          // console.log("recommended file written");
         }
         else{
-          console.log(metadata["metadata"].length);
+          // console.log(metadata["metadata"].length);
         }
       }
     } 
     else{
-      console.log("ID doesn't match");
+      // console.log("ID doesn't match");
     }
   };
 
   const EngineCall = async (currentID:string,metadata:any)=>{
-    console.log(200);
+    // console.log(200);
     const response = await fetch('https://skillup-505952169629.asia-south1.run.app/recommender',
       {
         method: 'POST',
@@ -240,7 +240,7 @@ const VideoPreview = ({ route }: StackVideoProps) => {
       }
     )
     const data = await response.json()
-    console.log("success");
+    // console.log("success");
     return data;
   }
   
