@@ -107,7 +107,7 @@ const Login = ({ navigation }: TabProps) => {
                 const docRef2 = await addDoc(collection(db, "users", `${uid}/topics`), topics);
                 // console.log("Document written with ID: ", docRef2.id);
                 const path1 = RNFS.DocumentDirectoryPath + '/topics.txt';
-                await RNFS.writeFile(path1, JSON.stringify(topics), 'utf8')
+                await RNFS.writeFile(path1, JSON.stringify(topics), 'utf8');
 
             }
 
@@ -116,7 +116,7 @@ const Login = ({ navigation }: TabProps) => {
             EncryptedStorage4.setItem("uid", uid)
             
             RNRestart.restart();
-            // navigation.navigate('StackNavigation')
+            navigation.navigate('StackNavigation');
         }
         catch (e) {
             // console.log(e);
