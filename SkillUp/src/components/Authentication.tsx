@@ -42,85 +42,87 @@ const Login = ({ navigation }: TabProps) => {
 
 
     const ContinueWithGoogle = async () => {
-        try {
-            await GoogleSignin.signOut();
+        Alert.alert("Dissabled by the Developer,","Please manually enter credentials in above method")
+        // try {
+        //     await GoogleSignin.signOut();
 
-            await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+        //     await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
 
-            const signInResult: any = await GoogleSignin.signIn();
-            // console.log(signInResult);
+        //     const signInResult: any = await GoogleSignin.signIn();
+        //     // console.log(signInResult);
 
-            let idToken = signInResult.data?.idToken;
-            // console.log(idToken);
+        //     let idToken = signInResult.data?.idToken;
+        //     // console.log(idToken);
 
-            if (!idToken) {
-                idToken = signInResult.idToken;
-            }
-            if (!idToken) {
-                throw new Error('No ID token found');
-            }
+        //     if (!idToken) {
+        //         idToken = signInResult.idToken;
+        //     }
+        //     if (!idToken) {
+        //         throw new Error('No ID token found');
+        //     }
 
-            const uid = signInResult.data.user.id;
-            const name = signInResult.data.user.name;
-            const email = signInResult.data.user.email;
+        //     const uid = signInResult.data.user.id;
+        //     const name = signInResult.data.user.name;
+        //     const email = signInResult.data.user.email;
 
-            const googleCredential = auth.GoogleAuthProvider.credential(idToken);
-            // console.log(googleCredential);
+        //     const googleCredential = auth.GoogleAuthProvider.credential(idToken);
+        //     // console.log(googleCredential);
 
-            try {
-                const docRef = collection(db, "users", `${uid}/UserPreferences`);
-                const docSnap = await getDocs(docRef);
+        //     try {
+        //         const docRef = collection(db, "users", `${uid}/UserPreferences`);
+        //         const docSnap = await getDocs(docRef);
 
-                const docRef1 = collection(db, "users", `${uid}/topics`);
-                const docSnap1 = await getDocs(docRef1);
+        //         const docRef1 = collection(db, "users", `${uid}/topics`);
+        //         const docSnap1 = await getDocs(docRef1);
 
-                // console.log(docSnap.docs[0].data());
-                const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
-                await RNFS.writeFile(path, JSON.stringify(docSnap.docs[0].data()), 'utf8')
-                const path1 = RNFS.DocumentDirectoryPath + '/topics.txt';
-                await RNFS.writeFile(path1, JSON.stringify(docSnap1.docs[0].data()), 'utf8')
-            } catch (error) {
-                // console.log(error);
-                const docRef = await addDoc(collection(db, "users", `${uid}/UserDetails`), {
-                    name: name,
-                    email: email,
-                });
-                console.log("Document written with ID: ", docRef.id);
-                let user_preferences = {
-                    "UserDetails": {
-                        "name": name,
-                        "email": email
-                    },
-                    "history": [],
-                    "saved": [],
-                    "courses": []
-                }
-                let topics = {
-                    "topics": ["Web development", "Machine Learning", "Python", "Java"]
-                }
+        //         // console.log(docSnap.docs[0].data());
+        //         const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
+        //         await RNFS.writeFile(path, JSON.stringify(docSnap.docs[0].data()), 'utf8')
+        //         const path1 = RNFS.DocumentDirectoryPath + '/topics.txt';
+        //         await RNFS.writeFile(path1, JSON.stringify(docSnap1.docs[0].data()), 'utf8')
+        //     } catch (error) {
+        //         // console.log(error);
+        //         const docRef = await addDoc(collection(db, "users", `${uid}/UserDetails`), {
+        //             name: name,
+        //             email: email,
+        //         });
+        //         console.log("Document written with ID: ", docRef.id);
+        //         let user_preferences = {
+        //             "UserDetails": {
+        //                 "name": name,
+        //                 "email": email
+        //             },
+        //             "history": [],
+        //             "saved": [],
+        //             "courses": []
+        //         }
+        //         let topics = {
+        //             "topics": ["Web development", "Machine Learning", "Python", "Java"]
+        //         }
 
-                const docRef1 = await addDoc(collection(db, "users", `${uid}/UserPreferences`), user_preferences);
-                // console.log("Document written with ID: ", docRef1.id);
-                const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
-                await RNFS.writeFile(path, JSON.stringify(user_preferences), 'utf8')
+        //         const docRef1 = await addDoc(collection(db, "users", `${uid}/UserPreferences`), user_preferences);
+        //         // console.log("Document written with ID: ", docRef1.id);
+        //         const path = RNFS.DocumentDirectoryPath + '/user_preferences.txt';
+        //         await RNFS.writeFile(path, JSON.stringify(user_preferences), 'utf8')
 
-                const docRef2 = await addDoc(collection(db, "users", `${uid}/topics`), topics);
-                // console.log("Document written with ID: ", docRef2.id);
-                const path1 = RNFS.DocumentDirectoryPath + '/topics.txt';
-                await RNFS.writeFile(path1, JSON.stringify(topics), 'utf8');
+        //         const docRef2 = await addDoc(collection(db, "users", `${uid}/topics`), topics);
+        //         // console.log("Document written with ID: ", docRef2.id);
+        //         const path1 = RNFS.DocumentDirectoryPath + '/topics.txt';
+        //         await RNFS.writeFile(path1, JSON.stringify(topics), 'utf8');
 
-            }
+        //     }
 
-            await auth().signInWithCredential(googleCredential);
-            ReactNativeAsyncStorage.setItem("isLoggedIn", "true");
-            EncryptedStorage4.setItem("uid", uid)
+        //     await auth().signInWithCredential(googleCredential);
+        //     // ReactNativeAsyncStorage.setItem("isLoggedIn", "true");
+        //     // EncryptedStorage4.setItem("uid", uid)
             
-            RNRestart.restart();
-            navigation.navigate('StackNavigation');
-        }
-        catch (e) {
-            // console.log(e);
-        }
+        //     RNRestart.restart();
+        //     // navigation.navigate('StackNavigation');
+        // }
+        // catch (e) {
+        //     // console.log(e);
+        //     Alert.alert("Dissabled by the Developer,","Please manually enter credentials in above method")
+        // }
     }
 
 
