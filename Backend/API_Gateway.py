@@ -2,6 +2,8 @@ from fastapi import FastAPI,Request
 from recommender import recommender
 from content_provider import fetchcourses,customsearch, fetchcoursevideos
 from transcript import transcript
+from summary import summary
+from ask_doubt import chat_model
 import json
 from pydantic import BaseModel
 from threading import Lock
@@ -38,12 +40,13 @@ def write_request_data(data):
 class Item(BaseModel):
     q: str|None = None
     data:str|None = None
-
+    transcript:str|None = None
+    question:str|None = None
+    summary:str|None = None
 
 @app.get("/")
 async def root():
     return "Welcome to skillup.AI! this is API_Gateway and services are running successfully."
-
 
 
 @app.post("/recommender")
@@ -106,3 +109,39 @@ def sendcoursevideos(item:Item):
     q = data["q"]
     print(q)
     return fetchcoursevideos(q)
+
+@app.post("/summary")
+async def getsummary(item:Item):
+    global LAST_CALL_TIME
+    with COOL_DOWN_LOCK:
+        current_time = time.time()
+        time_since_last_call = current_time - LAST_CALL_TIME
+        if time_since_last_call < COOL_DOWN_TIME:
+            return {'error': 'Server is cooling down, retry after 1 minute'}
+        
+        LAST_CALL_TIME = current_time
+
+    data = item.model_dump()
+    ts = data['transcript']
+    res = str(summary(ts))
+    filelist = res.split("\n")
+    processed = []
+    for line in filelist:
+        processed.append(line.strip().replace("*",""))
+
+    return processed
+    
+
+@app.post("/chat")
+async def activatechat(item:Item):
+    data = item.model_dump()
+    question = data['question']
+    res = str(chat_model(question))
+    filelist = res.split("\n")
+    processed = []
+    for line in filelist:
+        processed.append(line.strip().replace("*",""))
+    
+    joined = "\n".join(processed)
+
+    return joined

@@ -11,12 +11,14 @@ import Authentication from './components/Authentication';
 import Toast from 'react-native-toast-message';
 import { useEffect } from 'react';
 import SplashScreen from 'react-native-splash-screen';
+import Chat from './components/Chat';
 
 export type StackParamList = {
   WelcomeScreen: undefined;
   VideoPreview: {
     item: string | any
   };
+  Chat: undefined;
 }
 
 export type TabParamList = {
@@ -72,6 +74,13 @@ const StackNavigation = () => {
       <stack.Screen
         name='VideoPreview'
         component={VideoPreview}
+        options={{
+          headerShown:false
+        }}
+      />
+      <stack.Screen
+        name='Chat'
+        component={Chat}
         options={{
           headerShown:false
         }}

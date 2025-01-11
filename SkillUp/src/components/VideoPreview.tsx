@@ -11,12 +11,15 @@ import { YoutubeTranscript } from 'youtube-transcript';
 import EncryptedStorage4 from 'react-native-encrypted-storage'
 import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message'
-
+import { useNavigation } from '@react-navigation/native';
 // import { TabParamList } from '../App'
 
 type StackVideoProps = NativeStackScreenProps<StackParamList, 'VideoPreview'>
 
 const VideoPreview = ({ route }: StackVideoProps) => {
+
+  const navigation = useNavigation<string | any>();
+
   interface quizcontent {
     question: string,
     correctAnswer: string,
@@ -38,6 +41,9 @@ const VideoPreview = ({ route }: StackVideoProps) => {
   // const [pressCount, setpressCount] = useState(1)
   const [quizView, setquizView] = useState(false)
   const [update, setupdate] = useState(false)
+  const [summary, setsummary] = useState<string[]>([])
+  const [question, setquestion] = useState('')
+  const [summaryView, setsummaryView] = useState(false)
   const [uid, setuid] = useState()
   const JSON5 = require('json5');
 
@@ -243,6 +249,42 @@ const VideoPreview = ({ route }: StackVideoProps) => {
     // console.log("success");
     return data;
   }
+
+  const getsummary = async()=>{
+    setloader(true);
+    setsummaryView(true);
+    try {
+
+      let txtlist = []
+      const response = await YoutubeTranscript.fetchTranscript(item.videoID);
+      for(let i=0;i<response.length;i++){
+        txtlist.push(response[i]['text'])
+      }
+      // console.log(txtlist);
+      const transrc = txtlist.join(' ');
+      const res = await fetch('https://e175-2409-40c2-26-8cdb-45ab-d7b9-f9a6-f52f.ngrok-free.app/summary',
+        {
+          method: 'POST',
+          headers:{
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body : JSON.stringify({"transcript" : transrc})
+        }
+      )
+      const data = await res.json();
+      setsummary(data);
+      console.log(data);
+      setloader(false);
+    }
+    catch (error) {
+      console.log(error);
+      // Alert.alert('Something went wrong !');
+      showToast("error","Something went wrong !");
+      setloader(false);
+      setsummaryView(false);
+    }
+  }
   
   const showToast = (type:string,message:string) => {
     Toast.show({
@@ -308,12 +350,18 @@ const VideoPreview = ({ route }: StackVideoProps) => {
         />
         <Text style={styles.videoTitle}>{item.title}</Text>
       </View>
-      {<View style={[styles.btnspace,quizView?{display:'none'}:{}]}>
+      {<View style={[styles.btnspace,{flexWrap:'wrap'},quizView||summaryView?{display:'none'}:{}]}>
         <TouchableOpacity style={styles.btns} onPress={() => { savedata() }} >
           <Text style={styles.btntitle}>Save</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.btns} onPress={getquiz}>
           <Text style={styles.btntitle}>Generate quiz</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.btns} onPress={getsummary}>
+          <Text style={styles.btntitle}>Summary</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.btns} onPress={()=>{navigation.navigate('Chat')}}>
+          <Text style={styles.btntitle}>Ask doubt</Text>
         </TouchableOpacity>
       </View>}
       {loader && <ActivityIndicator
@@ -338,7 +386,7 @@ const VideoPreview = ({ route }: StackVideoProps) => {
                 <Text style={styles.quetxt}>Q: {item.question}</Text>
               </View>
               {saveopts.length!=0&&<View style={styles.optlayout}>
-                {item.options.map((opts,optindex)=>(
+                {item.options.map((opts,optindex)=>(  
                   highlight&&queattempted===index&&saveopts[index][1]===opts?<TouchableOpacity style={[styles.opt,{backgroundColor:'rgba(62, 254, 89, 0.2)'}]} onPress={()=>handleOptClick(index,optindex,opts)}>
                     <Text style={styles.optstxt}>{opts}</Text>
                   </TouchableOpacity>:selected===optindex&&queattempted===index?<TouchableOpacity style={[styles.opt,{backgroundColor:'rgba(165, 190, 252, 0.197)'}]} onPress={()=>handleOptClick(index,optindex,opts)}>
@@ -351,6 +399,22 @@ const VideoPreview = ({ route }: StackVideoProps) => {
             </>
           }
           keyExtractor={item.question}
+        >
+        </FlatList>
+      </View>}
+      {summary.length!=0&&summaryView&&<View style={{alignItems:'center',height:Dimensions.get('window').height/1.7}}>
+        <View style={styles.header}>
+          <Text style={styles.headertxt}>Summary & key highlights</Text>
+          <TouchableOpacity onPress={()=>{setsummaryView(false)}} style={styles.headerbtn}><Text style={{color: 'rgb(25,42,86)',fontWeight:'bold'}}>Close</Text></TouchableOpacity>
+        </View>
+        <FlatList
+          data={summary}
+          renderItem={({item})=>
+            <View key={item} style={{justifyContent:'center',paddingHorizontal:15}}>
+              <Text style={[styles.optstxt,{fontSize:16,color:'rgb(16, 28, 58)'}]}>{item}</Text>
+            </View>
+          }
+          keyExtractor={(item, index) => index.toString()}
         >
         </FlatList>
       </View>}
