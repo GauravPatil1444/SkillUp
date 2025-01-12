@@ -13,11 +13,12 @@ const Chat = () => {
     const [chat, setchat] = useState<string[]>([])
     const [Editable, setEditable] = useState(true)
 
+
     const askdoubt = async () => {
         setEditable(false);
         setsearchinp("Thinking...");
         try{
-            const res = await fetch('https://e175-2409-40c2-26-8cdb-45ab-d7b9-f9a6-f52f.ngrok-free.app/chat',
+            const res = await fetch('https://skillup-505952169629.asia-south1.run.app/chat',
                 {
                     method: 'POST',
                     headers: {
@@ -64,7 +65,7 @@ const Chat = () => {
                 <Text style={styles.headertxt}>Ask doubts regarding topics</Text>
                 <TouchableOpacity onPress={() => { navigation.pop() }} style={styles.headerbtn}><Text style={{ color: 'rgb(25,42,86)', fontWeight: 'bold' }}>Close</Text></TouchableOpacity>
             </View>
-            <View style={{ height: Dimensions.get('window').height / 1.28,}}>
+            <View style={{ height: '85%'}}>
                 {chat.length == 0 && <View style={{ height: Dimensions.get('window').height / 1.28, justifyContent: 'center', alignItems: 'center' }}><Image style={[{ width: Dimensions.get('window').width / 3.5, height: Dimensions.get('window').width / 3.5 }]} source={require('../assets/Logo_dark.png')} /></View>}
                 <FlatList
                     maxToRenderPerBatch={3}
@@ -120,7 +121,8 @@ const styles = StyleSheet.create({
         width: Dimensions.get('window').width,
         alignItems: 'center',
         position: 'absolute',
-        bottom: 15
+        bottom: 10,
+        // backgroundColor:'pink'
     },
     inpfield: {
         alignItems: 'center',
@@ -141,11 +143,12 @@ const styles = StyleSheet.create({
     header: {
         backgroundColor: '#FBFCF8',
         paddingVertical: 10,
+        // paddingHorizontal:12,
         justifyContent: 'center',
         alignItems: 'center',
         flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: Dimensions.get('window').width / 4
+        // flexWrap: 'wrap',
+        gap: Dimensions.get('window').width / 5
     },
     headerbtn: {
         backgroundColor: 'rgba(165, 190, 252, 0.197)',

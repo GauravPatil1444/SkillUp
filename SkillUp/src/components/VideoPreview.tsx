@@ -155,22 +155,25 @@ const VideoPreview = ({ route }: StackVideoProps) => {
       )
       const data = await res.json() 
       if (data['error']) {
+        setquizView(false);
         Alert.alert(data.error);
+        setloader(false);
       }
       for(let i = 0;i < data.length;i++){
         setsaveopts(prevsaveopts => [...prevsaveopts,[i,data[i]['correctAnswer']]])
       }
       
       setcount(0)
-      setquizdata(data)
+      setquizdata(data);
       setquizView(true);
-      setloader(false)
+      setloader(false);
     }
     catch (error) {
       // console.log(error);
       // Alert.alert('Something went wrong !');
       showToast("error","Something went wrong !");
       setloader(false);
+      setquizView(false);
     }
   }
 
@@ -262,7 +265,7 @@ const VideoPreview = ({ route }: StackVideoProps) => {
       }
       // console.log(txtlist);
       const transrc = txtlist.join(' ');
-      const res = await fetch('https://e175-2409-40c2-26-8cdb-45ab-d7b9-f9a6-f52f.ngrok-free.app/summary',
+      const res = await fetch('https://skillup-505952169629.asia-south1.run.app/summary',
         {
           method: 'POST',
           headers:{

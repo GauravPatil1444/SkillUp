@@ -8,4 +8,4 @@ google-generativeai
 json5 
 python-dotenv
 redis
-grok
+groq
