@@ -1,0 +1,7 @@
+services:
+  web:
+    build: .
+    image: skillup:1.1.0
+    ports:
+      - "8000:8000"
+  

@@ -276,9 +276,17 @@ const VideoPreview = ({ route }: StackVideoProps) => {
         }
       )
       const data = await res.json();
-      setsummary(data);
-      console.log(data);
-      setloader(false);
+      if (data['error']) {
+        setsummaryView(false);
+        // Alert.alert(data.error);
+        showToast("error",data.error);
+        setloader(false);
+      }
+      else{
+        setsummary(data);
+        console.log(data);
+        setloader(false);
+      }
     }
     catch (error) {
       console.log(error);
